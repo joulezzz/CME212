@@ -20,13 +20,42 @@
  * most one edge between any pair of distinct nodes).
  */
 class Graph {
- private:
 
+  // Predeclare the internal struct
+  struct Point;
+
+ private:
   // HW0: YOUR CODE HERE
   // Use this space for declarations of important internal types you need
   // later in the Graph's definition.
   // (As with all the "YOUR CODE HERE" markings, you may not actually NEED
   // code here. Just use the space if you need it.)
+
+  // Internal type for node points 
+  struct Point {
+    double x; // x coordinate of node
+    double y; // y coordinate of node
+    //size_type node_id
+  };
+
+  size_type graph_id_; // unique graph id
+  std::vector<Point*> positions_; // pointer to a vector of Points
+  size_type graph_size_; // size of the graph (number of nodes)
+  size_type next_node_id_; 
+
+
+  // Internal type for edge pairs
+  struct Pair {
+    node_type u; // one edge
+    node_type v; // another edge
+  };
+
+  std::vector<Pair*> connections_; // pointer to a vector of Pairs
+  size_type edge_id_; // unqiue edge id
+  size_type edge_size_; // number of eges
+  size_type next_edge_id_;
+  
+
 
  public:
 
@@ -57,7 +86,7 @@ class Graph {
   //
 
   /** Construct an empty graph. */
-  Graph() {
+  Graph() : positions_(), graph_size_(0), graph_id_(0), next_node_id_(0) { // calls Node() constructor
     // HW0: YOUR CODE HERE
   }
 
@@ -94,16 +123,28 @@ class Graph {
       // HW0: YOUR CODE HERE
     }
 
-    /** Return this node's position. */
+    /** Method that returns this node's position. */ 
     const Point& position() const {
       // HW0: YOUR CODE HERE
-      return Point();
+      for (size_type i = 0; i < graph_->size(); ++i)
+        if (i == node_id_)
+          return graph_->positions_[i];
+      assert(false);
     }
 
     /** Return this node's index, a number in the range [0, graph_size). */
     size_type index() const {
       // HW0: YOUR CODE HERE
-      return size_type(-1);
+      for (size_type i = 0; i < graph_->size(); ++i)
+        if (i == node_id_)
+          return i; // 
+      assert(false);
+    }
+
+    /** Return the pointer to the graph
+    */
+    Graph* getGraphPointer() const {
+      return graph_
     }
 
     /** Test whether this node and @a n are equal.
@@ -112,8 +153,8 @@ class Graph {
      */
     bool operator==(const Node& n) const {
       // HW0: YOUR CODE HERE
-      (void) n;          // Quiet compiler warning
-      return false;
+      //(void) n;          // Quiet compiler warning
+      return ( (n.index() == node_id_) && ( n.getGraphPointer() == graph_) );
     }
 
     /** Test whether this node is less than @a n in a global order.
@@ -126,8 +167,8 @@ class Graph {
      */
     bool operator<(const Node& n) const {
       // HW0: YOUR CODE HERE
-      (void) n;           // Quiet compiler warning
-      return false;
+      //(void) n;           // Quiet compiler warning
+      return node_id_ < n.index();
     }
 
    private:
@@ -137,21 +178,32 @@ class Graph {
     // Use this space to declare private data members and methods for Node
     // that will not be visible to users, but may be useful within Graph.
     // i.e. Graph needs a way to construct valid Node objects
+    
+    // Pointer back to the Graph container
+    Graph* graph_;
+    // This nodes unqiue identification number
+    size_type node_id_;
+    /** Private Constructor */
+    Node(const Graph* graph, size_type node_id)
+        : graph_(const_cast<Graph*>(graph)), node_id_(node_id) {
+    }
   };
 
-  /** Return the number of nodes in the graph.
+  /** Return the number of nodes in the graph.  
    *
    * Complexity: O(1).
    */
   size_type size() const {
     // HW0: YOUR CODE HERE
-    return 0;
+    return graph_size_; // positions_.size() // optional
   }
 
   /** Synonym for size(). */
   size_type num_nodes() const {
     return size();
   }
+
+
 
   /** Add a node to the graph, returning the added node.
    * @param[in] position The new node's position
@@ -162,8 +214,11 @@ class Graph {
    */
   Node add_node(const Point& position) {
     // HW0: YOUR CODE HERE
+    position_.push_back(position);
+    ++graph_size_; // update the size of the graph
+    ++next_node_id_; // update next node_id
     (void) position;      // Quiet compiler warning
-    return Node();        // Invalid node
+    return Node(this, next_node_id_ - 1);        // Invalid node
   }
 
   /** Determine if a Node belongs to this Graph
@@ -173,8 +228,8 @@ class Graph {
    */
   bool has_node(const Node& n) const {
     // HW0: YOUR CODE HERE
-    (void) n;            // Quiet compiler warning
-    return false;
+    //(void) n;            // Quiet compiler warning
+    return ((n.getPointer() == graph_);
   }
 
   /** Return the node with index @a i.
@@ -185,8 +240,9 @@ class Graph {
    */
   Node node(size_type i) const {
     // HW0: YOUR CODE HERE
-    (void) i;             // Quiet compiler warning
-    return Node();        // Invalid node
+    assert(i < size());
+    //(void) i;             // Quiet compiler warning
+    return Node(this, i);        // Invalid node
   }
 
   //
@@ -209,13 +265,19 @@ class Graph {
     /** Return a node of this Edge */
     Node node1() const {
       // HW0: YOUR CODE HERE
-      return Node();      // Invalid Node
+      for (size_type i = 0; i < graph_->num_edges(); ++i)
+        if (i == edge_id_)
+          return graph_->connections_[i].u;
+      assert(false);
     }
 
     /** Return the other node of this Edge */
     Node node2() const {
       // HW0: YOUR CODE HERE
-      return Node();      // Invalid Node
+            for (size_type i = 0; i < graph_->num_edges(); ++i)
+        if (i == edge_id_)
+          return graph_->connections_[i].v;
+      assert(false);
     }
 
     /** Test whether this edge and @a e are equal.
@@ -244,6 +306,8 @@ class Graph {
     // Use this space to declare private data members and methods for Edge
     // that will not be visible to users, but may be useful within Graph.
     // i.e. Graph needs a way to construct valid Edge objects
+    Graph* graph_; // a pointer back to the graph
+    size_type e_uid_ // the edge unique id
   };
 
   /** Return the total number of edges in the graph.
@@ -252,7 +316,7 @@ class Graph {
    */
   size_type num_edges() const {
     // HW0: YOUR CODE HERE
-    return 0;
+    return edge_size_;
   }
 
   /** Return the edge with index @a i.
@@ -262,7 +326,8 @@ class Graph {
    */
   Edge edge(size_type i) const {
     // HW0: YOUR CODE HERE
-    (void) i;             // Quiet compiler warning
+    
+    //(void) i;             // Quiet compiler warning
     return Edge();        // Invalid Edge
   }
 
@@ -310,6 +375,7 @@ class Graph {
   // HW0: YOUR CODE HERE
   // Use this space for your Graph class's internals:
   //   helper functions, data members, and so forth.
+ 
 
 };
 
