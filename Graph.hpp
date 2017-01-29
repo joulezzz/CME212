@@ -1,3 +1,4 @@
+
 #ifndef CME212_GRAPH_HPP
 #define CME212_GRAPH_HPP
 
@@ -6,8 +7,8 @@
  */
 
 #include <algorithm>
-#include <vector>
 #include <cassert>
+#include <vector>
 
 #include "CME212/Util.hpp"
 #include "CME212/Point.hpp"
@@ -20,42 +21,12 @@
  * most one edge between any pair of distinct nodes).
  */
 class Graph {
-
-  // Predeclare the internal struct
-  struct Point;
-
  private:
-  // HW0: YOUR CODE HERE
+
   // Use this space for declarations of important internal types you need
   // later in the Graph's definition.
   // (As with all the "YOUR CODE HERE" markings, you may not actually NEED
   // code here. Just use the space if you need it.)
-
-  // Internal type for node points 
-  struct Point {
-    double x; // x coordinate of node
-    double y; // y coordinate of node
-    //size_type node_id
-  };
-
-  size_type graph_id_; // unique graph id
-  std::vector<Point*> positions_; // pointer to a vector of Points
-  size_type graph_size_; // size of the graph (number of nodes)
-  size_type next_node_id_; 
-
-
-  // Internal type for edge pairs
-  struct Pair {
-    node_type u; // one edge
-    node_type v; // another edge
-  };
-
-  std::vector<Pair*> connections_; // pointer to a vector of Pairs
-  size_type edge_id_; // unqiue edge id
-  size_type edge_size_; // number of eges
-  size_type next_edge_id_;
-  
-
 
  public:
 
@@ -86,8 +57,7 @@ class Graph {
   //
 
   /** Construct an empty graph. */
-  Graph() : positions_(), graph_size_(0), graph_id_(0), next_node_id_(0) { // calls Node() constructor
-    // HW0: YOUR CODE HERE
+  Graph() : nodes(),edges(),adjacency(){
   }
 
   /** Default destructor */
@@ -120,31 +90,16 @@ class Graph {
      * @endcode
      */
     Node() {
-      // HW0: YOUR CODE HERE
     }
 
-    /** Method that returns this node's position. */ 
+    /** Return this node's position. */
     const Point& position() const {
-      // HW0: YOUR CODE HERE
-      for (size_type i = 0; i < graph_->size(); ++i)
-        if (i == node_id_)
-          return graph_->positions_[i];
-      assert(false);
+      return graph_->nodes[uid_];
     }
 
     /** Return this node's index, a number in the range [0, graph_size). */
     size_type index() const {
-      // HW0: YOUR CODE HERE
-      for (size_type i = 0; i < graph_->size(); ++i)
-        if (i == node_id_)
-          return i; // 
-      assert(false);
-    }
-
-    /** Return the pointer to the graph
-    */
-    Graph* getGraphPointer() const {
-      return graph_
+      return uid_;
     }
 
     /** Test whether this node and @a n are equal.
@@ -152,9 +107,10 @@ class Graph {
      * Equal nodes have the same graph and the same index.
      */
     bool operator==(const Node& n) const {
-      // HW0: YOUR CODE HERE
-      //(void) n;          // Quiet compiler warning
-      return ( (n.index() == node_id_) && ( n.getGraphPointer() == graph_) );
+      if (graph_ == n.graph_)
+        if (uid_ ==  n.uid_)
+          return true;
+      return false;
     }
 
     /** Test whether this node is less than @a n in a global order.
@@ -166,44 +122,42 @@ class Graph {
      * and y, exactly one of x == y, x < y, and y < x is true.
      */
     bool operator<(const Node& n) const {
-      // HW0: YOUR CODE HERE
-      //(void) n;           // Quiet compiler warning
-      return node_id_ < n.index();
+      if (graph_ == n.graph_){
+        if (uid_ <  n.uid_)
+          return true;
+      }
+      else{
+        if (graph_ < n.graph_)
+          return true;
+      }
+      return false;
     }
 
    private:
     // Allow Graph to access Node's private member data and functions.
     friend class Graph;
-    // HW0: YOUR CODE HERE
+    Graph* graph_;
+    size_type uid_;
+    Node(const Graph* graph_pointer, size_type uid)
+        : graph_(const_cast<Graph*>(graph_pointer)), uid_(uid) {
+    }
     // Use this space to declare private data members and methods for Node
     // that will not be visible to users, but may be useful within Graph.
     // i.e. Graph needs a way to construct valid Node objects
-    
-    // Pointer back to the Graph container
-    Graph* graph_;
-    // This nodes unqiue identification number
-    size_type node_id_;
-    /** Private Constructor */
-    Node(const Graph* graph, size_type node_id)
-        : graph_(const_cast<Graph*>(graph)), node_id_(node_id) {
-    }
   };
 
-  /** Return the number of nodes in the graph.  
+  /** Return the number of nodes in the graph.
    *
    * Complexity: O(1).
    */
   size_type size() const {
-    // HW0: YOUR CODE HERE
-    return graph_size_; // positions_.size() // optional
+    return nodes.size();
   }
 
   /** Synonym for size(). */
   size_type num_nodes() const {
     return size();
   }
-
-
 
   /** Add a node to the graph, returning the added node.
    * @param[in] position The new node's position
@@ -213,12 +167,9 @@ class Graph {
    * Complexity: O(1) amortized operations.
    */
   Node add_node(const Point& position) {
-    // HW0: YOUR CODE HERE
-    position_.push_back(position);
-    ++graph_size_; // update the size of the graph
-    ++next_node_id_; // update next node_id
-    (void) position;      // Quiet compiler warning
-    return Node(this, next_node_id_ - 1);        // Invalid node
+    nodes.push_back(position);
+    adjacency.push_back(std::vector<std::pair<size_type, size_type>> ());
+    return Node(this,nodes.size()-1);
   }
 
   /** Determine if a Node belongs to this Graph
@@ -227,9 +178,10 @@ class Graph {
    * Complexity: O(1).
    */
   bool has_node(const Node& n) const {
-    // HW0: YOUR CODE HERE
-    //(void) n;            // Quiet compiler warning
-    return ((n.getPointer() == graph_);
+    if (n.graph_ == this)
+      if (n.uid_<nodes.size())
+        return true;
+    return false;
   }
 
   /** Return the node with index @a i.
@@ -239,10 +191,7 @@ class Graph {
    * Complexity: O(1).
    */
   Node node(size_type i) const {
-    // HW0: YOUR CODE HERE
-    assert(i < size());
-    //(void) i;             // Quiet compiler warning
-    return Node(this, i);        // Invalid node
+    return Node(this, i);
   }
 
   //
@@ -259,25 +208,16 @@ class Graph {
    public:
     /** Construct an invalid Edge. */
     Edge() {
-      // HW0: YOUR CODE HERE
     }
 
     /** Return a node of this Edge */
     Node node1() const {
-      // HW0: YOUR CODE HERE
-      for (size_type i = 0; i < graph_->num_edges(); ++i)
-        if (i == edge_id_)
-          return graph_->connections_[i].u;
-      assert(false);
+      return Node(graph_,node1_id);
     }
 
     /** Return the other node of this Edge */
     Node node2() const {
-      // HW0: YOUR CODE HERE
-            for (size_type i = 0; i < graph_->num_edges(); ++i)
-        if (i == edge_id_)
-          return graph_->connections_[i].v;
-      assert(false);
+      return Node(graph_,node2_id);
     }
 
     /** Test whether this edge and @a e are equal.
@@ -285,7 +225,12 @@ class Graph {
      * Equal edges represent the same undirected edge between two nodes.
      */
     bool operator==(const Edge& e) const {
-      (void) e;           // Quiet compiler warning
+      if (graph_ == e.graph_){
+        if ((node1_id == e.node1_id and node2_id == e.node2_id) or 
+             (node1_id == e.node2_id and node2_id == e.node1_id)){
+          return true;
+        }
+      }
       return false;
     }
 
@@ -295,19 +240,30 @@ class Graph {
      * std::map<>. It need not have any interpretive meaning.
      */
     bool operator<(const Edge& e) const {
-      (void) e;           // Quiet compiler warning
+      if (graph_ == e.graph_){
+        if (uid_ < e.uid_)
+          return true;
+      }
+      else{
+        if (graph_ < e.graph_)
+          return true;
+      }
       return false;
     }
 
    private:
     // Allow Graph to access Edge's private member data and functions.
     friend class Graph;
-    // HW0: YOUR CODE HERE
+    Graph* graph_;
+    size_type uid_;
+    size_type node1_id;
+    size_type node2_id;
+    Edge(const Graph* graph_pointer, size_type uid, size_type node1, size_type node2)
+        : graph_(const_cast<Graph*>(graph_pointer)), uid_(uid), node1_id(node1), node2_id(node2){
+    }
     // Use this space to declare private data members and methods for Edge
     // that will not be visible to users, but may be useful within Graph.
     // i.e. Graph needs a way to construct valid Edge objects
-    Graph* graph_; // a pointer back to the graph
-    size_type e_uid_ // the edge unique id
   };
 
   /** Return the total number of edges in the graph.
@@ -315,8 +271,7 @@ class Graph {
    * Complexity: No more than O(num_nodes() + num_edges()), hopefully less
    */
   size_type num_edges() const {
-    // HW0: YOUR CODE HERE
-    return edge_size_;
+    return edges.size();
   }
 
   /** Return the edge with index @a i.
@@ -325,10 +280,7 @@ class Graph {
    * Complexity: No more than O(num_nodes() + num_edges()), hopefully less
    */
   Edge edge(size_type i) const {
-    // HW0: YOUR CODE HERE
-    
-    //(void) i;             // Quiet compiler warning
-    return Edge();        // Invalid Edge
+    return Edge(this, i, edges[i].first, edges[i].second);
   }
 
   /** Test whether two nodes are connected by an edge.
@@ -338,8 +290,9 @@ class Graph {
    * Complexity: No more than O(num_nodes() + num_edges()), hopefully less
    */
   bool has_edge(const Node& a, const Node& b) const {
-    // HW0: YOUR CODE HERE
-    (void) a; (void) b;   // Quiet compiler warning
+    for (unsigned int i=0; i<adjacency[a.uid_].size(); i++)
+       if (b.uid_ == adjacency[a.uid_][i].first)
+         return true;
     return false;
   }
 
@@ -356,9 +309,16 @@ class Graph {
    * Complexity: No more than O(num_nodes() + num_edges()), hopefully less
    */
   Edge add_edge(const Node& a, const Node& b) {
-    // HW0: YOUR CODE HERE
-    (void) a, (void) b;   // Quiet compiler warning
-    return Edge();        // Invalid Edge
+    for (unsigned int i=0; i<adjacency[a.uid_].size(); i++)
+       if (b.uid_ == adjacency[a.uid_][i].first)
+         return Edge(this, adjacency[a.uid_][i].second, a.uid_, b.uid_);
+    if (a<b)
+      edges.push_back(std::make_pair(a.uid_,b.uid_));
+    else
+      edges.push_back(std::make_pair(b.uid_,a.uid_));
+    adjacency[a.uid_].push_back(std::make_pair(b.uid_,edges.size()-1));
+    adjacency[b.uid_].push_back(std::make_pair(a.uid_,edges.size()-1));
+    return Edge(this,edges.size()-1,a.uid_,b.uid_);
   }
 
   /** Remove all nodes and edges from this graph.
@@ -367,16 +327,24 @@ class Graph {
    * Invalidates all outstanding Node and Edge objects.
    */
   void clear() {
-    // HW0: YOUR CODE HERE
+    nodes.clear();
+    edges.clear();
+    adjacency.clear();
   }
 
  private:
 
-  // HW0: YOUR CODE HERE
   // Use this space for your Graph class's internals:
   //   helper functions, data members, and so forth.
- 
-
+  // * @nodes is a list with the position of node @i in index i
+  std::vector<Point> nodes;
+  // * @edges is a list containing pairs of nodes for each edge.
+  //   The pair stored in position i corresponds to edge i.
+  std::vector<std::pair<size_type, size_type>> edges;
+  // * @adjacency is a vector containing vector with pairs. It contains
+  //   at position i the pairs of each node adjacent to node i and the
+  //   the edge id that connect node i to the adjacent node.
+  std::vector<std::vector<std::pair<size_type, size_type>>> adjacency;
 };
 
 #endif // CME212_GRAPH_HPP
