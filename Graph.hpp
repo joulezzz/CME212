@@ -107,8 +107,8 @@ class Graph {
      * Equal nodes have the same graph and the same index.
      */
     bool operator==(const Node& n) const {
-      if (graph_ == n.graph_)
-        if (uid_ ==  n.uid_)
+      if (graph_ == n.graph_) // recall these are pointers so this check their address
+        if (uid_ ==  n.uid_)  // this is not a pointer, so it compares numbers
           return true;
       return false;
     }
@@ -122,12 +122,12 @@ class Graph {
      * and y, exactly one of x == y, x < y, and y < x is true.
      */
     bool operator<(const Node& n) const {
-      if (graph_ == n.graph_){
+      if (graph_ == n.graph_){ // if this belongs to same graph
         if (uid_ <  n.uid_)
           return true;
       }
       else{
-        if (graph_ < n.graph_)
+        if (graph_ < n.graph_) // if this belongs to previous graph
           return true;
       }
       return false;
@@ -139,7 +139,7 @@ class Graph {
     Graph* graph_;
     size_type uid_;
     Node(const Graph* graph_pointer, size_type uid)
-        : graph_(const_cast<Graph*>(graph_pointer)), uid_(uid) {
+        : graph_( const_cast<Graph*>(graph_pointer) ), uid_( uid ) {
     }
     // Use this space to declare private data members and methods for Node
     // that will not be visible to users, but may be useful within Graph.
@@ -151,12 +151,12 @@ class Graph {
    * Complexity: O(1).
    */
   size_type size() const {
-    return nodes.size();
+    return nodes.size(); // recall nodes is a vector, size is its method
   }
 
   /** Synonym for size(). */
   size_type num_nodes() const {
-    return size();
+    return size(); // just calls the same function above
   }
 
   /** Add a node to the graph, returning the added node.
@@ -168,8 +168,8 @@ class Graph {
    */
   Node add_node(const Point& position) {
     nodes.push_back(position);
-    adjacency.push_back(std::vector<std::pair<size_type, size_type>> ());
-    return Node(this,nodes.size()-1);
+    adjacency.push_back(std::vector<std::pair<size_type, size_type>> ()); 
+    return Node(this,nodes.size()-1); 
   }
 
   /** Determine if a Node belongs to this Graph
