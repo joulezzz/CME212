@@ -379,4 +379,11 @@ class Graph {
 
 };
 
+//--comment
+//--doesn't compile.
+//--almost no implementaton of edge.
+//--END
+
+//--grade4
+
 #endif // CME212_GRAPH_HPP
