@@ -20,6 +20,7 @@
  * Users can add and retrieve nodes and edges. Edges are unique (there is at
  * most one edge between any pair of distinct nodes).
  */
+template <typename V>
 class Graph {
  private:
 
@@ -33,6 +34,8 @@ class Graph {
   //
   // PUBLIC TYPE DEFINITIONS
   //
+  /** Type of the node values */
+  using node_value_type = V;
 
   /** Type of this graph. */
   using graph_type = Graph;
@@ -109,7 +112,7 @@ class Graph {
 
     /** Return this node's position. */
     const Point& position() const {
-      return graph_->nodes[uid_];
+      return graph_->nodes[uid_].first;
     }
 
     /** Return this node's index, a number in the range [0, graph_size). */
@@ -124,6 +127,12 @@ class Graph {
     // size_type degree() const;
     // incident_iterator edge_begin() const;
     // incident_iterator edge_end() const;
+    node_value_type & value (){
+      return graph->nodes[uid_].second
+    }
+    const node_value_type & value () const {
+      return graph->nodes[uid_].second
+    }
 
     /** Test whether this node and @a n are equal.
      *
@@ -189,8 +198,9 @@ class Graph {
    *
    * Complexity: O(1) amortized operations.
    */
-  Node add_node(const Point& position) {
-    nodes.push_back(position);
+  Node add_node(const Point& position, const node_value_type& new_value = node_value_type()) {
+    //nodes.push_back(position);
+    nodes.push_back(std::make_pair(position, new_value));
     adjacency.push_back(std::vector<std::pair<size_type, size_type>> ()); 
     return Node(this,nodes.size()-1); 
   }
@@ -362,6 +372,7 @@ class Graph {
   /** @class Graph::NodeIterator
    * @brief Iterator class for nodes. A forward iterator. */
   class NodeIterator {
+
    public:
     // These type definitions let us use STL's iterator_traits.
     using value_type        = Node;                     // Element type
@@ -376,19 +387,35 @@ class Graph {
 
     // HW1 #2: YOUR CODE HERE
     // Supply definitions AND SPECIFICATIONS for:
-    // Node operator*() const
-    // NodeIterator& operator++()
-    // bool operator==(const NodeIterator&) const
+
+    Node operator*() const {
+      return *iter_;
+    }
+
+    NodeIterator& operator++(){
+      return iter_++;
+
+    }
+
+    bool operator==(const NodeIterator& nodeIterator) const {
+      return  ( nodeIterator.graph_ == graph_) && (nodeIterator.iter_ == iter_);
+    }
 
    private:
     friend class Graph;
     // HW1 #2: YOUR CODE HERE
+    pointer iter_;
+    Graph *graph_;
   };
 
   // HW1 #2: YOUR CODE HERE
   // Supply definitions AND SPECIFICATIONS for:
-  // node_iterator node_begin() const
-  // node_iterator node_end() const
+  node_iterator node_begin() const {
+    return nodes[0];
+  }
+  node_iterator node_end() const {
+    return nodes[nodes.size()];
+  }
 
   //
   // Incident Iterator
@@ -418,6 +445,7 @@ class Graph {
    private:
     friend class Graph;
     // HW1 #3: YOUR CODE HERE
+
   };
 
   //
@@ -460,7 +488,8 @@ class Graph {
   // Use this space for your Graph class's internals:
   //   helper functions, data members, and so forth.
   // * @nodes is a list with the position of node @i in index i
-  std::vector<Point> nodes;
+  //std::vector<Point> nodes;
+  std::vector<std::pair<Point,V>> nodes;
   // * @edges is a list containing pairs of nodes for each edge.
   //   The pair stored in position i corresponds to edge i.
   std::vector<std::pair<size_type, size_type>> edges;
