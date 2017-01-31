@@ -122,17 +122,17 @@ class Graph {
 
     // HW1: YOUR CODE HERE
     // Supply definitions AND SPECIFICATIONS for:
-    // node_value_type& value();
-    // const node_value_type& value() const;
-    // size_type degree() const;
-    // incident_iterator edge_begin() const;
-    // incident_iterator edge_end() const;
     node_value_type & value (){
-      return graph->nodes[uid_].second
+      return graph_->nodes[uid_].second;
     }
     const node_value_type & value () const {
-      return graph->nodes[uid_].second
+      return graph_->nodes[uid_].second;
     }
+
+    size_type degree() const {
+    }
+    incident_iterator edge_begin() const;
+    incident_iterator edge_end() const;
 
     /** Test whether this node and @a n are equal.
      *
@@ -371,7 +371,7 @@ class Graph {
 
   /** @class Graph::NodeIterator
    * @brief Iterator class for nodes. A forward iterator. */
-  class NodeIterator {
+  class NodeIterator : private totally_ordered<NodeIterator> {
 
    public:
     // These type definitions let us use STL's iterator_traits.
@@ -392,7 +392,7 @@ class Graph {
     // Supply definitions AND SPECIFICATIONS for:
 
     Node operator*() const {
-    	return graph_->nodes(index_points);
+    	return graph_->node(index_points);
     }
 
     NodeIterator& operator++(){
@@ -418,11 +418,13 @@ class Graph {
   	NodeIterator iter;
   	iter.index_points = 0;
   	iter.graph_ = this;
-  	return it;
+  	return iter;
   }
   node_iterator node_end() const {
-    NodeIterator it;
-    return it.index_points = nodes.size();
+    NodeIterator iter;
+    iter.index_points = nodes.size();
+    iter.graph_ = this;
+    return iter;
   }
 
   //
@@ -446,9 +448,9 @@ class Graph {
 
     // HW1 #3: YOUR CODE HERE
     // Supply definitions AND SPECIFICATIONS for:
-    // Edge operator*() const
-    // IncidentIterator& operator++()
-    // bool operator==(const IncidentIterator&) const
+    Edge operator*() const
+    IncidentIterator& operator++()
+    bool operator==(const IncidentIterator&) const
 
    private:
     friend class Graph;
