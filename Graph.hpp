@@ -385,36 +385,44 @@ class Graph {
     NodeIterator() {
     }
 
+    NodeIterator(const Graph* g, size_type i): graph_(g), index_points(i) {
+    }
+
     // HW1 #2: YOUR CODE HERE
     // Supply definitions AND SPECIFICATIONS for:
 
     Node operator*() const {
-      return *iter_;
+    	return graph_->nodes(index_points);
     }
 
     NodeIterator& operator++(){
-      return iter_++;
+      index_points++;
+      return  *this;
 
     }
 
     bool operator==(const NodeIterator& nodeIterator) const {
-      return  ( nodeIterator.graph_ == graph_) && (nodeIterator.iter_ == iter_);
+      return ( nodeIterator.graph_ == graph_) && (nodeIterator.index_points == index_points);
     }
 
    private:
     friend class Graph;
     // HW1 #2: YOUR CODE HERE
-    pointer iter_;
-    Graph *graph_;
+    const Graph *graph_;
+    size_type index_points;
   };
 
   // HW1 #2: YOUR CODE HERE
   // Supply definitions AND SPECIFICATIONS for:
   node_iterator node_begin() const {
-    return nodes[0];
+  	NodeIterator iter;
+  	iter.index_points = 0;
+  	iter.graph_ = this;
+  	return it;
   }
   node_iterator node_end() const {
-    return nodes[nodes.size()];
+    NodeIterator it;
+    return it.index_points = nodes.size();
   }
 
   //
