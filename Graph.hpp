@@ -130,18 +130,18 @@ class Graph {
     }
 
     size_type degree() const {
-      return adjacency[uid_].size();
+      return graph_->adjacency[uid_].size();
 
     }
 
     incident_iterator edge_begin() const {
-      incident_iterator = iter;
+      incident_iterator iter;
       iter(graph_, uid_, 0);
       return iter;
 
     }
     incident_iterator edge_end() const {
-      incident_iterator = iter;
+      incident_iterator iter;
       iter(graph_, uid_, degree());
       return iter;
     }
