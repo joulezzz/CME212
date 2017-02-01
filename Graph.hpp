@@ -458,7 +458,7 @@ class Graph {
     IncidentIterator() {
     }
 
-    IncidentIterator(const Graph* graph, size_type node_index, size_type edge_index): graph_(graph), node_index_(node_index), edge_index_(edge_index) {
+    IncidentIterator(Graph* graph, size_type node_index, size_type edge_index): graph_(graph), node_index_(node_index), edge_index_(edge_index) {
     }
 
     // HW1 #3: YOUR CODE HERE
