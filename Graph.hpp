@@ -134,14 +134,14 @@ class Graph {
 
     }
 
-    incident_iterator edge_begin() const {
+    Incident_Iterator edge_begin() const {
       incident_iterator iter;
       iter(graph_, uid_, 0);
       return iter;
 
     }
-    incident_iterator edge_end() const {
-      incident_iterator iter;
+    Incident_Iterator edge_end() const {
+      Incident_Iterator iter;
       iter(graph_, uid_, degree());
       return iter;
     }
