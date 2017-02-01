@@ -32,9 +32,22 @@ using NodeIter  = typename GraphType::node_iterator;
  * @post For all i, 0 <= i < graph.num_nodes(),
  *          norm(point - *result) <= norm(point - g.node(i).position())
  */
+
 NodeIter nearest_node(const GraphType& g, const Point& point)
 {
   // HW1 #3: YOUR CODE HERE
+  double minDist = norm_2(*(g.node_begin()) - point);
+  NodeIter min_ni = g.node_begin();
+  for (auto ni = g.node_begin(); ni != g.node_end(); ++ni){
+    auto node = *ni;
+    double tempDist = norm_2(node.position() - point);
+    if (tempDist < minDist){
+      minDist  = tempDist;
+      NodeIter min_ni = ni;
+    }
+  return min_ni;
+  }
+
   (void) g, (void) point;     // Quiet compiler warning
   return g.node_end();
 }
