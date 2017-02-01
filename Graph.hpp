@@ -464,7 +464,7 @@ class Graph {
     // HW1 #3: YOUR CODE HERE
     // Supply definitions AND SPECIFICATIONS for:
     Edge operator*() const {
-      return Edge(graph_, graph_.adjacency[node_index_][edge_index_].second, node_index_, adjacency[node_index_][edge_index_].first);
+      return Edge(graph_, graph_->adjacency[node_index_][edge_index_].second, node_index_, graph_->adjacency[node_index_][edge_index_].first);
     }
 
     IncidentIterator& operator++() {
