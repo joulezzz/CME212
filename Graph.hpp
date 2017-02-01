@@ -135,15 +135,11 @@ class Graph {
     }
 
     IncidentIterator edge_begin() const {
-      IncidentIterator iter;
-      iter(graph_, uid_, 0);
-      return iter;
+      return IncidentIterator(graph_, uid_, 0);
 
     }
     IncidentIterator edge_end() const {
-      IncidentIterator iter;
-      iter(graph_, uid_, degree());
-      return iter;
+      return IncidentIterator(graph_, uid_, degree());
     }
 
     /** Test whether this node and @a n are equal.
