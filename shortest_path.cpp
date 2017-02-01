@@ -45,11 +45,8 @@ NodeIter nearest_node(const GraphType& g, const Point& point)
       minDist  = tempDist;
       min_ni = ni;
     }
-  return min_ni;
   }
-
-  (void) g, (void) point;     // Quiet compiler warning
-  return g.node_end();
+  return min_ni;
 }
 
 /** Update a graph with the shortest path lengths from a root node.
@@ -69,8 +66,31 @@ NodeIter nearest_node(const GraphType& g, const Point& point)
 int shortest_path_lengths(GraphType& g, NodeType& root)
 {
   // HW1 #3: YOUR CODE HERE
-  (void) g, (void) root;      // Quiet compiler warnings
-  return 0;
+  //(void) g, (void) root;      // Quiet compiler warnings
+
+  // initialize all node values to -1
+  for (auto ni = g.node_begin(); ni != g.node_end(); ++ni){
+    auto node1 = *ni;
+    node1.value() = -1;
+  }
+  int current_max = -1;
+  std::queue<Node> q;
+  root.value() = 0;
+  q.push(root);
+
+  while(q.size()){
+    auto n = q.front();
+    q.pop();
+    for (auto ei = n.edge_begin(); ei != n.edge_end(); ++ei ){
+      auto e = *ei;
+      auto node2 = e.node2();
+      if (node2.value() == -1){
+        node2.value() = n.value() + 1;
+        current_max = node2.valeu();
+      }
+    }
+  }
+  return current_max;
 }
 
 
