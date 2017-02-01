@@ -75,7 +75,7 @@ int shortest_path_lengths(GraphType& g, NodeType& root)
     node1.value() = -1;
   }
   int current_max = -1;
-  std::queue<Node> q;
+  std::queue<NodeType> q;
   root.value() = 0;
   q.push(root);
 
