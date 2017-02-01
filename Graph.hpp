@@ -441,7 +441,7 @@ class Graph {
 
   /** @class Graph::IncidentIterator
    * @brief Iterator class for edges incident to a node. A forward iterator. */
-  class IncidentIterator {
+  class IncidentIterator : private totally_ordered<IncidentIterator> {
    public:
     // These type definitions let us use STL's iterator_traits.
     using value_type        = Edge;                     // Element type
