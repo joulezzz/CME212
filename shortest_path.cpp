@@ -16,6 +16,7 @@
 #include "CME212/Color.hpp"
 
 #include "Graph.hpp"
+#include <queue>
 
 // Define our types
 using GraphType = Graph<int>;
