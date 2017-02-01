@@ -130,9 +130,21 @@ class Graph {
     }
 
     size_type degree() const {
+      return adjacency[uid_].size();
+
     }
-    incident_iterator edge_begin() const;
-    incident_iterator edge_end() const;
+
+    incident_iterator edge_begin() const {
+      incident_iterator = iter;
+      iter(graph_, uid_, 0);
+      return iter;
+
+    }
+    incident_iterator edge_end() const {
+      incident_iterator = iter;
+      iter(graph_, uid_, degree());
+      return iter;
+    }
 
     /** Test whether this node and @a n are equal.
      *
@@ -446,14 +458,31 @@ class Graph {
     IncidentIterator() {
     }
 
+    IncidentIterator(const Graph* graph, size_type node_index, size_type edge_index): graph_(graph), node_index_(node_index), edge_index_(edge_index) {
+    }
+
     // HW1 #3: YOUR CODE HERE
     // Supply definitions AND SPECIFICATIONS for:
-    Edge operator*() const
-    IncidentIterator& operator++()
-    bool operator==(const IncidentIterator&) const
+    Edge operator*() const {
+      return Edge(graph_, graph_.adjacency[node_index_][edge_index_].second, node_index_, adjacency[node_index_][edge_index_].first);
+    }
+
+    IncidentIterator& operator++() {
+      edge_index_++;
+      return *this;
+    }
+
+    bool operator==(const IncidentIterator& incidentIterator) const {
+      return ( incidentIterator.graph_ == graph_) && (incidentIterator.node_index_ == node_index_) && (incidentIterator.edge_index_ == edge_index_);
+    }
 
    private:
     friend class Graph;
+    const Graph *graph_;
+    size_type node_index_;
+    size_type edge_index_; 
+
+
     // HW1 #3: YOUR CODE HERE
 
   };
