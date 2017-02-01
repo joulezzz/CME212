@@ -43,7 +43,7 @@ NodeIter nearest_node(const GraphType& g, const Point& point)
     double tempDist = norm_2(node.position() - point);
     if (tempDist < minDist){
       minDist  = tempDist;
-      NodeIter min_ni = ni;
+      min_ni = ni;
     }
   return min_ni;
   }
