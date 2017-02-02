@@ -85,7 +85,7 @@ filter_iterator<Pred,Iter> make_filtered(const Iter& it, const Iter& end,
 // Specify and write an interesting predicate on the nodes.
 // Explain what your predicate is intended to do and test it.
 // If you'd like you may create new nodes and tets files.
-struct InterstingPredicate {
+struct InterestingPredicate {
   template <typename NODE>
   bool operator()(const NODE& n) {
     return 0.5 < rand();
