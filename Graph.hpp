@@ -521,7 +521,7 @@ class Graph {
    private:
     friend class Graph;
     // HW1 #5: YOUR CODE HERE
-    Graph* graph_;
+    const Graph* graph_;
     size_type edge_index_;
   };
 
