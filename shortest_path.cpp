@@ -53,7 +53,7 @@ NodeIter nearest_node(const GraphType& g, const Point& point)
 // may not use
 void normalize_nodes(const GraphType& g, int normalizer){
   for (auto ni = g.node_begin(); ni != g.node_end(); ++ni){
-    node = *ni;
+    auto node = *ni;
     node.value() = node.value() / normalizer
   }
 }
@@ -142,7 +142,7 @@ int main(int argc, char** argv)
   // Construct a Color functor and view with the SFML_Viewer
   Point point(-1,0,1);
   NodeIter closest_iter = nearest_node(graph, point);
-  root = *closest_iter;
+  auto root = *closest_iter;
   
   int longest_path = shortest_path_lengths(graph, root);
   auto node_map = empty_node_map(graph)
