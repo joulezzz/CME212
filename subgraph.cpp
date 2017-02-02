@@ -86,8 +86,7 @@ filter_iterator<Pred,Iter> make_filtered(const Iter& it, const Iter& end,
 // Explain what your predicate is intended to do and test it.
 // If you'd like you may create new nodes and tets files.
 struct InterestingPredicate {
-  template <typename NODE>
-  bool operator()(const NODE& n) {
+  bool operator()() {
     int random_number = rand() % 100 + 1; // generate a number between 1 and 100
     return (random_number < 50);
   }
