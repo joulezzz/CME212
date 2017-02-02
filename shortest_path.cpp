@@ -50,6 +50,14 @@ NodeIter nearest_node(const GraphType& g, const Point& point)
   return min_ni;
 }
 
+// may not use
+void normalize_nodes(const GraphType& g, int normalizer){
+  for (auto ni = g.node_begin(); ni != g.node_end(); ++ni){
+    node = *ni;
+    node.value() = node.value() / normalizer
+  }
+}
+
 /** Update a graph with the shortest path lengths from a root node.
  * @param[in,out] g     Input graph
  * @param[in,out] root  Root node to start the search.
@@ -132,6 +140,26 @@ int main(int argc, char** argv)
   // HW1 #3: YOUR CODE HERE
   // Use nearest_node and shortest_path_lengths to set the node values
   // Construct a Color functor and view with the SFML_Viewer
+  Point point(-1,0,1);
+  NodeIter closest_iter = nearest_node(graph, point);
+  root = *closest_iter;
+  int longest_path = shortest_path_lengths(graph, root);
+  auto node_map = empty_node_map(graph)
+  // Working on this
+  template <typename T> 
+  struct ColorFn {
+    const T& longest_path_;
+    float operator() (const T& ) const {
+      float ratio = float(node_value) /  float(longest_path);
+      return Color::make_heat(ratio)
+    }
+  }
+
+
+  void add_nodes ( graph.node_begin() , graph.node_end() , color_fn , node_map );
+
+
+
 
   // Center the view and enter the event loop for interactivity
   viewer.center_view();

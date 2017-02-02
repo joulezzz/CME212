@@ -400,7 +400,7 @@ class Graph {
     // Supply definitions AND SPECIFICATIONS for:
 
     Node operator*() const {
-    	return graph_->node(index_points);
+    	return Node(graph_ , index_points);
     }
 
     NodeIterator& operator++(){
@@ -423,16 +423,10 @@ class Graph {
   // HW1 #2: YOUR CODE HERE
   // Supply definitions AND SPECIFICATIONS for:
   node_iterator node_begin() const {
-  	NodeIterator iter;
-  	iter.index_points = 0;
-  	iter.graph_ = this;
-  	return iter;
+  	return NodeIterator(this, 0);
   }
   node_iterator node_end() const {
-    NodeIterator iter;
-    iter.index_points = nodes.size();
-    iter.graph_ = this;
-    return iter;
+    return NodeIterator(this, nodes.size());
   }
 
   //
@@ -454,7 +448,7 @@ class Graph {
     IncidentIterator() {
     }
 
-    IncidentIterator(Graph* graph, size_type node_index, size_type edge_index): graph_(graph), node_index_(node_index), edge_index_(edge_index) {
+    IncidentIterator(Graph* graph, size_type node_index, size_type edge_index) : graph_(graph), node_index_(node_index), edge_index_(edge_index) {
     }
 
     // HW1 #3: YOUR CODE HERE
@@ -489,7 +483,7 @@ class Graph {
 
   /** @class Graph::EdgeIterator
    * @brief Iterator class for edges. A forward iterator. */
-  class EdgeIterator {
+  class EdgeIterator : private totally_ordered<IncidentIterator> {
    public:
     // These type definitions let us use STL's iterator_traits.
     using value_type        = Edge;                     // Element type
@@ -502,21 +496,46 @@ class Graph {
     EdgeIterator() {
     }
 
+    EdgeIterator(const Graph* g, size_type edge_index) : graph_(g), edge_index_(edge_index) {
+    }
+
     // HW1 #5: YOUR CODE HERE
     // Supply definitions AND SPECIFICATIONS for:
-    // Edge operator*() const
-    // EdgeIterator& operator++()
-    // bool operator==(const EdgeIterator&) const
+    Edge operator*() const {
+      return Edge(graph_, edge_index_, graph_->edges[edge_index_].node1()->uid_, graph_->edges[edge_index_].node2()->uid_);
+    }
+
+    EdgeIterator& operator++() {
+      edge_index_++;
+      return *this;
+    }
+
+    bool operator==(const EdgeIterator&) const {
+      if (EdgeIterator.graph_ == graph_){
+        return (EdgeIterator.edge_index_ == edge_index_);
+      }
+      return false;
+    }
+  
 
    private:
     friend class Graph;
     // HW1 #5: YOUR CODE HERE
+    Graph* graph_;
+    size_type edge_index_;
   };
 
   // HW1 #5: YOUR CODE HERE
   // Supply definitions AND SPECIFICATIONS for:
-  // edge_iterator edge_begin() const
-  // edge_iterator edge_end() const
+  edge_iterator edge_begin() const {
+    return EdgeIterator(this, 0)
+
+  }
+
+  edge_iterator edge_end() const {
+    return EdgeIterator(this, edges.size())
+
+  }
 
  private:
 
