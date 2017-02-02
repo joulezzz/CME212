@@ -483,7 +483,7 @@ class Graph {
 
   /** @class Graph::EdgeIterator
    * @brief Iterator class for edges. A forward iterator. */
-  class EdgeIterator : private totally_ordered<IncidentIterator> {
+  class EdgeIterator : private totally_ordered<EdgeIterator> {
    public:
     // These type definitions let us use STL's iterator_traits.
     using value_type        = Edge;                     // Element type
@@ -511,10 +511,10 @@ class Graph {
     }
 
     bool operator==(const EdgeIterator& edge_iterator) const {
-      //if (edge_iterator.graph_ == graph_){
+      if (edge_iterator.graph_ == graph_){
         return (edge_iterator.edge_index_ == edge_index_);
-      //}
-      //return false;
+      }
+      return false;
     }
   
 
