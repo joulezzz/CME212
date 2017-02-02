@@ -141,7 +141,7 @@ int main(int argc, char** argv)
 
   auto node_map = viewer.empty_node_map(graph);
   viewer.add_nodes( filter_start , filter_end, node_map );
-  viewer.add_edges( filter_start , filter_end, node_map );
+  viewer.add_edges( graph.edge_begin() , graph.edge_end(), node_map );
 
   // Center the view and enter the event loop for interactivity
   viewer.center_view();
