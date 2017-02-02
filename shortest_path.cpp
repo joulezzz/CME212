@@ -87,7 +87,8 @@ int shortest_path_lengths(GraphType& g, NodeType& root)
       auto node2 = e.node2();
       if (node2.value() == -1){
         node2.value() = n.value() + 1;
-        current_max = node2.value();
+        if (node2.value() > current_max) current_max = node2.value();
+        q.pugh(node2);
       }
     }
   }
@@ -141,10 +142,12 @@ int main(int argc, char** argv)
   
   struct ColorFn {
     CME212::Color operator () (NodeType n){
-      return CME212::Color::make_heat(float(n.value())/float(normalizer));
+      return CME212::Color::make_heat(1.0 - (float(n.value())/normalizer_) );
     }
-    private :
-      const int normalizer;
+
+    ColorFn(int normalizer) : normalize_(normalizer){};
+   private :
+      const int normalizer_;
   };
 
   add_nodes ( graph.node_begin() , graph.node_end() , ColorFn(longest_path) , node_map );
