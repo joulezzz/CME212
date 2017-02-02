@@ -510,9 +510,9 @@ class Graph {
       return *this;
     }
 
-    bool operator==(const EdgeIterator&) const {
-      if (EdgeIterator.graph_ == graph_){
-        return (EdgeIterator.edge_index_ == edge_index_);
+    bool operator==(const EdgeIterator& edge_iterator) const {
+      if (edge_iterator.graph_ == graph_){
+        return (edge_iterator.edge_index_ == edge_index_);
       }
       return false;
     }
@@ -528,12 +528,12 @@ class Graph {
   // HW1 #5: YOUR CODE HERE
   // Supply definitions AND SPECIFICATIONS for:
   edge_iterator edge_begin() const {
-    return EdgeIterator(this, 0)
+    return EdgeIterator(this, 0);
 
   }
 
   edge_iterator edge_end() const {
-    return EdgeIterator(this, edges.size())
+    return EdgeIterator(this, edges.size());
 
   }
 
