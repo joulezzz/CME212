@@ -44,12 +44,12 @@ class filter_iterator : private equality_comparable<filter_iterator<Pred,It>>
   // HW1 #4: YOUR CODE HERE
   // Supply definitions AND SPECIFICATIONS for:
   value_type operator*() const{
-    return *it;
+    return *it_;
   }
   filter_iterator& operator++(){
-    ++it;
+    ++it_;
     find_next_true();
-    return *this
+    return *this;
   }
   bool operator==(const filter_iterator& rit) const{
     //return (it_ == rit.it_)  && (end_ == rit.end_);
@@ -61,7 +61,7 @@ class filter_iterator : private equality_comparable<filter_iterator<Pred,It>>
   It it_;
   It end_;
   void find_next_true() {
-    while(it_ != end_ && !p_(*it)) ++it;
+    while(it_ != end_ && !p_(*it_)) ++it_;
   }
 };
 
