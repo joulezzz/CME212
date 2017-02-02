@@ -88,7 +88,7 @@ int shortest_path_lengths(GraphType& g, NodeType& root)
       if (node2.value() == -1){
         node2.value() = n.value() + 1;
         if (node2.value() > current_max) current_max = node2.value();
-        q.pugh(node2);
+        q.push(node2);
       }
     }
   }
