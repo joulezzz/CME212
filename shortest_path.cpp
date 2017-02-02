@@ -155,7 +155,7 @@ int main(int argc, char** argv)
       const int normalizer;
   }
 
-  void add_nodes ( graph.node_begin() , graph.node_end() , color_fn , node_map );
+  void add_nodes ( graph.node_begin() , graph.node_end() , ColorFn(longest_path) , node_map );
 
 
 
