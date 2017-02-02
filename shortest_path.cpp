@@ -143,18 +143,17 @@ int main(int argc, char** argv)
   Point point(-1,0,1);
   NodeIter closest_iter = nearest_node(graph, point);
   root = *closest_iter;
+  
   int longest_path = shortest_path_lengths(graph, root);
   auto node_map = empty_node_map(graph)
-  // Working on this
-  template <typename T> 
+  
   struct ColorFn {
-    const T& longest_path_;
-    float operator() (const T& ) const {
-      float ratio = float(node_value) /  float(longest_path);
-      return Color::make_heat(ratio)
+    CME212::Color operator () (NodeType n){
+      return CME212::Color::make_heat(float(n.value())/float(normalizer)) {};
     }
+    private :
+      const int normalizer;
   }
-
 
   void add_nodes ( graph.node_begin() , graph.node_end() , color_fn , node_map );
 

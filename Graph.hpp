@@ -502,7 +502,7 @@ class Graph {
     // HW1 #5: YOUR CODE HERE
     // Supply definitions AND SPECIFICATIONS for:
     Edge operator*() const {
-      return Edge(graph_, edge_index_, graph_->edges[edge_index_].node1()->uid_, graph_->edges[edge_index_].node2()->uid_);
+      return Edge(graph_, edge_index_, graph_->edges[edge_index_].first, graph_->edges[edge_index_].second);
     }
 
     EdgeIterator& operator++() {
