@@ -134,13 +134,13 @@ int main(int argc, char** argv)
 
   // HW1 #4: YOUR CODE HERE
   // Use the filter_iterator to plot an induced subgraph.
-  
-  auto filter_start = make_filtered(graph.node_begin(), graph.node_end(), SlicePredicate());
-  auto filter_end = make_filtered(graph.node_end(), graph.node_end(), SlicePredicate());
+  SlicePredicate slice;
+
+  auto filter_start = make_filtered(graph.node_begin(), graph.node_end(), slice);
+  auto filter_end = make_filtered(graph.node_end(), graph.node_end(), slice;
 
   auto node_map = viewer.empty_node_map(graph);
-
-  viewer.add_nodes( filter_start , filter_end, ColorFn(longest_path) , node_map );
+  viewer.add_nodes( filter_start , filter_end, node_map );
   viewer.add_edges( filter_start , filter_end, node_map );
 
   // Center the view and enter the event loop for interactivity
