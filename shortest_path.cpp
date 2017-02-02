@@ -50,14 +50,6 @@ NodeIter nearest_node(const GraphType& g, const Point& point)
   return min_ni;
 }
 
-// may not use
-void normalize_nodes(const GraphType& g, int normalizer){
-  for (auto ni = g.node_begin(); ni != g.node_end(); ++ni){
-    auto node = *ni;
-    node.value() = node.value() / normalizer
-  }
-}
-
 /** Update a graph with the shortest path lengths from a root node.
  * @param[in,out] g     Input graph
  * @param[in,out] root  Root node to start the search.
@@ -145,7 +137,7 @@ int main(int argc, char** argv)
   auto root = *closest_iter;
   
   int longest_path = shortest_path_lengths(graph, root);
-  auto node_map = viewer.empty_node_map(graph)
+  auto node_map = viewer.empty_node_map(graph);
   
   struct ColorFn {
     CME212::Color operator () (NodeType n){
