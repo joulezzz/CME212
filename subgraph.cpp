@@ -51,9 +51,9 @@ class filter_iterator : private equality_comparable<filter_iterator<Pred,It>>
     find_next_true();
     return *this
   }
-  bool operator==(const self_type& self_type_it) const{
-    //return (it_ == self_type_it.it_)  && (end_ == self_type_it.end_);
-    return it_ == self_type_it.end_;
+  bool operator==(const filter_iterator& rit) const{
+    //return (it_ == rit.it_)  && (end_ == rit.end_);
+    return it_ == rit.end_;
   }
 
  private:
