@@ -145,12 +145,12 @@ int main(int argc, char** argv)
       return CME212::Color::make_heat(1.0 - (float(n.value())/normalizer_) );
     }
 
-    ColorFn(int normalizer) : normalize_(normalizer){};
+    ColorFn(int normalizer) : normalizer_(normalizer){};
    private :
       const int normalizer_;
   };
 
-  add_nodes ( graph.node_begin() , graph.node_end() , ColorFn(longest_path) , node_map );
+  viewer.add_nodes( graph.node_begin() , graph.node_end() , ColorFn(longest_path) , node_map );
 
 
 
