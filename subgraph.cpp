@@ -136,7 +136,7 @@ int main(int argc, char** argv)
   // Use the filter_iterator to plot an induced subgraph.
   
   auto filter_start = make_filtered(graph.node_begin(), graph.node_end(), SlicePredicate());
-  auto filter_start = make_filtered(graph.node_end(), graph.node_end(), SlicePredicate());
+  auto filter_end = make_filtered(graph.node_end(), graph.node_end(), SlicePredicate());
 
   auto node_map = viewer.empty_node_map(graph);
 
