@@ -149,13 +149,13 @@ int main(int argc, char** argv)
   
   struct ColorFn {
     CME212::Color operator () (NodeType n){
-      return CME212::Color::make_heat(float(n.value())/float(normalizer)) {};
+      return CME212::Color::make_heat(float(n.value())/float(normalizer));
     }
     private :
       const int normalizer;
-  }
+  };
 
-  void add_nodes ( graph.node_begin() , graph.node_end() , ColorFn(longest_path) , node_map );
+  add_nodes ( graph.node_begin() , graph.node_end() , ColorFn(longest_path) , node_map );
 
 
 
