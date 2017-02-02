@@ -151,7 +151,7 @@ int main(int argc, char** argv)
   };
 
   viewer.add_nodes( graph.node_begin() , graph.node_end() , ColorFn(longest_path) , node_map );
-
+  viewer.add_edges( graph.edge_begin() , graph.edge_end(), node_map );
 
 
 
