@@ -145,7 +145,7 @@ int main(int argc, char** argv)
   auto root = *closest_iter;
   
   int longest_path = shortest_path_lengths(graph, root);
-  auto node_map = empty_node_map(graph)
+  auto node_map = viewer.empty_node_map(graph)
   
   struct ColorFn {
     CME212::Color operator () (NodeType n){
