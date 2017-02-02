@@ -10,6 +10,7 @@
 
 #include <fstream>
 #include <iterator>
+#include <stdlib.h> /* srand, rand */
 
 #include "CME212/SFML_Viewer.hpp"
 #include "CME212/Util.hpp"
@@ -84,6 +85,12 @@ filter_iterator<Pred,Iter> make_filtered(const Iter& it, const Iter& end,
 // Specify and write an interesting predicate on the nodes.
 // Explain what your predicate is intended to do and test it.
 // If you'd like you may create new nodes and tets files.
+struct InterstingPredicate {
+  template <typename NODE>
+  bool operator()(const NODE& n) {
+    return 0.5 < rand();
+  }
+};
 
 /** Test predicate for HW1 #4 */
 struct SlicePredicate {
@@ -92,6 +99,8 @@ struct SlicePredicate {
     return n.position().x < 0;
   }
 };
+
+
 
 
 int main(int argc, char** argv)
@@ -134,7 +143,7 @@ int main(int argc, char** argv)
 
   // HW1 #4: YOUR CODE HERE
   // Use the filter_iterator to plot an induced subgraph.
-  SlicePredicate slice;
+  InterestingPredicate slice;
 
   auto filter_start = make_filtered(graph.node_begin(), graph.node_end(), slice);
   auto filter_end = make_filtered(graph.node_end(), graph.node_end(), slice);
