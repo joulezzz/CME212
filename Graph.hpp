@@ -496,7 +496,7 @@ class Graph {
     EdgeIterator() {
     }
 
-    EdgeIterator(const Graph* g, size_type edge_index) : graph_(g), edge_index_(edge_index) {
+    EdgeIterator(const Graph* graph, size_type edge_index) : graph_(graph), edge_index_(edge_index) {
     }
 
     // HW1 #5: YOUR CODE HERE
@@ -527,12 +527,12 @@ class Graph {
 
   // HW1 #5: YOUR CODE HERE
   // Supply definitions AND SPECIFICATIONS for:
-  edge_iterator edge_begin() const {
+  EdgeIterator edge_begin() const {
     return EdgeIterator(this, 0);
 
   }
 
-  edge_iterator edge_end() const {
+  EdgeIterator edge_end() const {
     return EdgeIterator(this, edges.size());
 
   }
