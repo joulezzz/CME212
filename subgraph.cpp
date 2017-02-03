@@ -102,13 +102,15 @@ filter_iterator<Pred,Iter> make_filtered(const Iter& it, const Iter& end,
 // Explain what your predicate is intended to do and test it.
 // If you'd like you may create new nodes and tets files.
 
-/**
- * @
+/** Return true is a node is a specified distance away from a specified point
+ * @param n An Node object 
+ * @return bool which is true only if @n.position() is a specified distance away from a specified point
+ * @pre @a n has valid position, i.e. @a n.position() is defined, is nonempty 
  */
 struct InterestingPredicate {
   template <typename NODE>
   bool operator()(const NODE& n) {
-    Point p(0,0,0);
+    Point p(0.1,0.1,0.1);
     double distance_from_point = norm_2(n.position() - p);
     double distance_allowed = 0.3;
     return (distance_from_point < distance_allowed);
