@@ -59,9 +59,14 @@ class filter_iterator : private equality_comparable<filter_iterator<Pred,It>>
    */
   filter_iterator& operator++(){
     ++it_;
-    while(it_ != end_ && !p_(*it_)) ++it_;
+    find_next_true();
     return *this;
   }
+
+  /**
+  * @param rit An object of const filter_iterator
+  * @return bool is true if @a rit points to the nullptr
+  */
   bool operator==(const filter_iterator& rit) const{
     //return (it_ == rit.it_)  && (end_ == rit.end_);
     return it_ == rit.end_;
@@ -72,7 +77,9 @@ class filter_iterator : private equality_comparable<filter_iterator<Pred,It>>
   It it_;
   It end_;
 
-
+  void find_next_true() {
+    while(it_ != end_ && !p_(*it_)) ++it_;
+  }
 };
 
 /** Helper function for constructing filter_iterators. This deduces the type of
@@ -94,6 +101,10 @@ filter_iterator<Pred,Iter> make_filtered(const Iter& it, const Iter& end,
 // Specify and write an interesting predicate on the nodes.
 // Explain what your predicate is intended to do and test it.
 // If you'd like you may create new nodes and tets files.
+
+/**
+ * @
+ */
 struct InterestingPredicate {
   template <typename NODE>
   bool operator()(const NODE& n) {
