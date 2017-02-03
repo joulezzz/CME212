@@ -89,9 +89,9 @@ struct InterestingPredicate {
   template <typename NODE>
   bool operator()(const NODE& n) {
     Point p(-1,0,1);
-    double distance = norm_2(n.position() - p);
+    double distance_from_point = norm_2(n.position() - p);
     double distance_allowed = 2;
-    return (distance < distance_allowed);
+    return (distance_from_point < distance_allowed);
   }
 };
 
