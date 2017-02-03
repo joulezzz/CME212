@@ -20,6 +20,7 @@
  * Users can add and retrieve nodes and edges. Edges are unique (there is at
  * most one edge between any pair of distinct nodes).
  */
+// Allows Nodes to support user specified value of type node_value_type: Graph<V>
 template <typename V>
 class Graph {
  private:
@@ -125,6 +126,7 @@ class Graph {
     node_value_type & value (){
       return graph_->nodes[uid_].second;
     }
+    // 
     const node_value_type & value () const {
       return graph_->nodes[uid_].second;
     }
