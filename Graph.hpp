@@ -420,7 +420,7 @@ class Graph {
     /**
      * @param[in] g The graph this NodeIterator points to
      * @param[in] i The index associated with this node
-     * @return NodeIterator pointing to @g with index @i
+     * @return NodeIterator 
      * @pre 0 <= @a i < num_nodes()
      */
     NodeIterator(const Graph* g, size_type i): graph_(g), index_points(i) {
@@ -429,7 +429,7 @@ class Graph {
     // HW1 #2: YOUR CODE HERE
     // Supply definitions AND SPECIFICATIONS for:
 
-    /** "Dereferences the Node"
+    /** "Dereferences the NodeIterator"
      * @return Node which points to the graph @graph_ and has @index_points as its index
      * @post 0 <= @aindex_points < num_nodes()
      */
@@ -469,17 +469,19 @@ class Graph {
   // HW1 #2: YOUR CODE HERE
   // Supply definitions AND SPECIFICATIONS for:
 
- /** Checks if two NodeIterators are the same
-  * @param[in] nodeIterator A NodeIterator 
-  * @return bool value
-  * @post bool is true if the following are all true
-  *         1. nodeIterator and this point to the same graph
-  *         2. if index_points member vairable of nodeIterator and this have same value
+ /** returns a NodeIterator that points to the first Node in the sets of nodes of this graph
+  * @return NodeIterator
+  * @post NodeIterator will point to the first Node in this graph if graph is nonempty
+  *       otherwise it will return a nullptr
   */
   NodeIterator node_begin() const {
   	return NodeIterator(this, 0);
   }
-  
+
+ /** returns a NodeIterator that indicates the end of the nodes
+  * @return NodeIterator
+  * @post NodeIterator is assigned nullptr
+  */
   NodeIterator node_end() const {
     return NodeIterator(this, nodes.size());
   }
@@ -503,20 +505,46 @@ class Graph {
     IncidentIterator() {
     }
 
+    /** Constructor for Incident iterator 
+     * @param[in] graph An object of Graph
+     * @param[in] node_index A value of size_type
+     * @param[in] edge_index A value of size_type
+     * @return IncidentIterator 
+     * @pre 0 <= @a node_index < num_nodes()
+     * @pre 0 <= @a edge_index < degree()
+     * @post IncidentIterator belongs to @a graph, is for @a node_index, and points to @a edge_index
+     */
     IncidentIterator(Graph* graph, size_type node_index, size_type edge_index) : graph_(graph), node_index_(node_index), edge_index_(edge_index) {
     }
 
     // HW1 #3: YOUR CODE HERE
     // Supply definitions AND SPECIFICATIONS for:
+
+    /** 
+     * @return The Edge that the this points to
+     */
     Edge operator*() const {
       return Edge(graph_, graph_->adjacency[node_index_][edge_index_].second, node_index_, graph_->adjacency[node_index_][edge_index_].first);
     }
 
+    /** Increments the IncidentIterator to point to the next adjacent node or nullptr
+     * @return NodeIterator that points to exactly one of the following:
+     *				1.) if edge_index_ < degree(), next adjacent node 
+     *				2.) if edge_Index_ = degree(), nullptr 
+     */
     IncidentIterator& operator++() {
       edge_index_++;
       return *this;
     }
 
+    /** Checks if two IncidentIterators are the same
+     * @param[in] incidentIterator A IncidentIterator 
+     * @return bool value
+     * @post bool is true if the following are all true
+     *         1. incidentIterator and this belong to the same graph
+     *         2. if node_index_ member variable of this and nodeIterator have same value
+     *         3. if edge_index_ member variable of this and nodeIterator have same value
+     */
     bool operator==(const IncidentIterator& incidentIterator) const {
       return ( incidentIterator.graph_ == graph_) && (incidentIterator.node_index_ == node_index_) && (incidentIterator.edge_index_ == edge_index_);
     }
@@ -551,20 +579,42 @@ class Graph {
     EdgeIterator() {
     }
 
+    /** Constructor for EdgeIterator
+     * @param[in] graph An object of Graph
+     * @param[in] edge_index A value of size_type
+     * @return EdgeIterator 
+     * @pre 0 <= @a edge_index < num_edges()
+     */
     EdgeIterator(const Graph* graph, size_type edge_index) : graph_(graph), edge_index_(edge_index) {
     }
 
     // HW1 #5: YOUR CODE HERE
     // Supply definitions AND SPECIFICATIONS for:
+
+     /** "Dereferences the EdgeIterator"
+      * @return Edge that this points 
+      */
     Edge operator*() const {
       return Edge(graph_, edge_index_, graph_->edges[edge_index_].first, graph_->edges[edge_index_].second);
     }
 
+     /** Increments the EdgeIterator to point to the next Edge (in a global sense) or the nullptr
+      * @return NodeIterator that points to exactly one of the following:
+      *				1.) if Edge global number < num_edges.size(), next Node 
+      *				2.) if Edge global number = num_edges(), nullptr 
+      */
     EdgeIterator& operator++() {
       edge_index_++;
       return *this;
     }
 
+     /** Checks if two EdgeIterators are the same
+      * @param[in] edgeIterator An object of EdgeIterator 
+      * @return bool value
+      * @post bool is true if the following are all hold
+      *         1. nodeIterator and this belong to the same graph
+      *         2. if *edgeIterator == *this (they point to same edge)
+      */
     bool operator==(const EdgeIterator& edge_iterator) const {
       if (edge_iterator.graph_ == graph_){
         return (edge_iterator.edge_index_ == edge_index_);
@@ -582,11 +632,21 @@ class Graph {
 
   // HW1 #5: YOUR CODE HERE
   // Supply definitions AND SPECIFICATIONS for:
+
+  /** returns a EdgeIterator that points to the first Edge in the "set" of all edges of this graph
+   * @return EdgeIterator
+   * @post EdgeIterator will point to the first Edge in this graph if graph is nonempty and has at least two nodes who are adjacent to each other
+   *       otherwise it will return a nullptr
+   */
   EdgeIterator edge_begin() const {
     return EdgeIterator(this, 0);
 
   }
 
+  /** returns an EdgeIterator that indicates the end of the "set" of edges
+   * @return EdgeIterator
+   * @post EdgeIterator is assigned nullptr
+   */
   EdgeIterator edge_end() const {
     return EdgeIterator(this, edges.size());
 
