@@ -90,7 +90,7 @@ struct InterestingPredicate {
   bool operator()(const NODE& n) {
     Point p(-1,0,1);
     double distance = norm_2(n.position() - p);
-    double distance_allowed = 1.5;
+    double distance_allowed = 2;
     return (distance < distance_allowed);
   }
 };
