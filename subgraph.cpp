@@ -39,17 +39,27 @@ class filter_iterator : private equality_comparable<filter_iterator<Pred,It>>
   filter_iterator(const Pred& p, const It& first, const It& last)
       : p_(p), it_(first), end_(last) {
     // HW1 #4: YOUR CODE HERE
-        find_next_true();
+        find_next_true(); 
   }
 
   // HW1 #4: YOUR CODE HERE
   // Supply definitions AND SPECIFICATIONS for:
+  
+  /** 
+  * @return returns the value_type that the filter_iterator points to
+  */
   value_type operator*() const{
     return *it_;
   }
+
+  /** This changes the filter_iterator to point to the next true object
+   * @return updates filter_iterator to point to next object that 
+   *         satisfied the predicated unless the filter_iterator already points 
+   *          to the nullptr
+   */
   filter_iterator& operator++(){
     ++it_;
-    find_next_true();
+    while(it_ != end_ && !p_(*it_)) ++it_;
     return *this;
   }
   bool operator==(const filter_iterator& rit) const{
@@ -61,9 +71,8 @@ class filter_iterator : private equality_comparable<filter_iterator<Pred,It>>
   Pred p_;
   It it_;
   It end_;
-  void find_next_true() {
-    while(it_ != end_ && !p_(*it_)) ++it_;
-  }
+
+
 };
 
 /** Helper function for constructing filter_iterators. This deduces the type of

@@ -33,10 +33,11 @@ using NodeIter  = typename GraphType::node_iterator;
  * @post For all i, 0 <= i < graph.num_nodes(),
  *          norm(point - *result) <= norm(point - g.node(i).position())
  */
-
 NodeIter nearest_node(const GraphType& g, const Point& point)
 {
   // HW1 #3: YOUR CODE HERE
+  if (g.num_nodes() == 0)
+    return g.node_end();
   NodeIter min_ni = g.node_begin();
   double minDist = norm_2((*min_ni).position() - point);
   for (auto ni = g.node_begin(); ni != g.node_end(); ++ni){
@@ -67,8 +68,6 @@ NodeIter nearest_node(const GraphType& g, const Point& point)
 int shortest_path_lengths(GraphType& g, NodeType& root)
 {
   // HW1 #3: YOUR CODE HERE
-  //(void) g, (void) root;      // Quiet compiler warnings
-
   // initialize all node values to -1
   for (auto ni = g.node_begin(); ni != g.node_end(); ++ni){
     auto node1 = *ni;
@@ -94,7 +93,6 @@ int shortest_path_lengths(GraphType& g, NodeType& root)
   }
   return current_max;
 }
-
 
 int main(int argc, char** argv)
 {
@@ -133,7 +131,7 @@ int main(int argc, char** argv)
   // HW1 #3: YOUR CODE HERE
   // Use nearest_node and shortest_path_lengths to set the node values
   // Construct a Color functor and view with the SFML_Viewer
-  Point point(-1,0,1);
+  Point point(-1,0, 1);
   NodeIter closest_iter = nearest_node(graph, point);
   auto root = *closest_iter;
   
