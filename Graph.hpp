@@ -35,6 +35,7 @@ class Graph {
   //
   // PUBLIC TYPE DEFINITIONS
   //
+
   /** Type of the node values */
   using node_value_type = V;
 
@@ -123,23 +124,43 @@ class Graph {
 
     // HW1: YOUR CODE HERE
     // Supply definitions AND SPECIFICATIONS for:
+
+    /**
+     * @return The value of this node which is node_value_type
+	 */
     node_value_type & value (){
       return graph_->nodes[uid_].second;
     }
-    // 
+    
+   	/**
+     * @return The value of this node which is const node_value_type
+	 */
     const node_value_type & value () const {
       return graph_->nodes[uid_].second;
     }
 
+   	/**
+     * @return The number of nodes adjacent to this node
+	 */
     size_type degree() const {
       return graph_->adjacency[uid_].size();
 
     }
 
+    /**
+     * @return An IncidentIterator that points to an edge adjacent to
+     * 		   the this node that is the first of the sequence of edges adjacent
+     *         to this node
+	 */
     IncidentIterator edge_begin() const {
       return IncidentIterator(graph_, uid_, 0);
 
     }
+
+    /**
+     * @return An IncidentIterator that does not point to an ajacent edge
+     * indicating that all adjacent edges have been iterated through
+	 */
     IncidentIterator edge_end() const {
       return IncidentIterator(graph_, uid_, degree());
     }
@@ -203,6 +224,7 @@ class Graph {
 
   /** Add a node to the graph, returning the added node.
    * @param[in] position The new node's position
+   * @param[in] new_value The new node's value
    * @post new num_nodes() == old num_nodes() + 1
    * @post result_node.index() == old num_nodes()
    *
@@ -395,22 +417,44 @@ class Graph {
     NodeIterator() {
     }
 
+    /**
+     * @param[in] g The graph this NodeIterator points to
+     * @param[in] i The index associated with this node
+     * @return NodeIterator pointing to @g with index @i
+     * @pre 0 <= @a i < num_nodes()
+     */
     NodeIterator(const Graph* g, size_type i): graph_(g), index_points(i) {
     }
 
     // HW1 #2: YOUR CODE HERE
     // Supply definitions AND SPECIFICATIONS for:
 
+    /** "Dereferences the Node"
+     * @return Node which points to the graph @graph_ and has @index_points as its index
+     * @post 0 <= @aindex_points < num_nodes()
+     */
     Node operator*() const {
     	return Node(graph_ , index_points);
     }
 
+    /** Increments the NodeIterator to point to the next Node or nullptr
+     * @return NodeIterator that points to exactly one of the following:
+     *				1.) if index_points < nodes.size(), next Node 
+     *				2.) if index_points = nodes.size(), nullptr 
+     */
     NodeIterator& operator++(){
       index_points++;
       return  *this;
 
     }
 
+    /** Checks if two NodeIterators are the same
+     * @param[in] nodeIterator A NodeIterator 
+     * @return bool value
+     * @post bool is true if the following are all true
+     *         1. nodeIterator and this point to the same graph
+     *         2. if index_points member vairable of nodeIterator and this have same value
+     */
     bool operator==(const NodeIterator& nodeIterator) const {
       return ( nodeIterator.graph_ == graph_) && (nodeIterator.index_points == index_points);
     }
@@ -424,10 +468,19 @@ class Graph {
 
   // HW1 #2: YOUR CODE HERE
   // Supply definitions AND SPECIFICATIONS for:
-  node_iterator node_begin() const {
+
+ /** Checks if two NodeIterators are the same
+  * @param[in] nodeIterator A NodeIterator 
+  * @return bool value
+  * @post bool is true if the following are all true
+  *         1. nodeIterator and this point to the same graph
+  *         2. if index_points member vairable of nodeIterator and this have same value
+  */
+  NodeIterator node_begin() const {
   	return NodeIterator(this, 0);
   }
-  node_iterator node_end() const {
+  
+  NodeIterator node_end() const {
     return NodeIterator(this, nodes.size());
   }
 
