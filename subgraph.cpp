@@ -88,7 +88,7 @@ filter_iterator<Pred,Iter> make_filtered(const Iter& it, const Iter& end,
 struct InterestingPredicate {
   template <typename NODE>
   bool operator()(const NODE& n) {
-    Point p(-1,0,1);
+    Point p(0,0,0);
     double distance_from_point = norm_2(n.position() - p);
     double distance_allowed = 1.75;
     return (distance_from_point < distance_allowed);
