@@ -87,9 +87,11 @@ filter_iterator<Pred,Iter> make_filtered(const Iter& it, const Iter& end,
 // If you'd like you may create new nodes and tets files.
 struct InterestingPredicate {
   template <typename NODE>
-  bool operator()() {
-    int random_number = rand() % 100 + 1; // generate a number between 1 and 100
-    return (random_number < 50 );
+  bool operator()(const NODE& n) {
+    Point p(-1,0,1);
+    double distance = norm_2(n.position() - point);
+    double distance_allowed = 5.0;
+    return (distance < distance_allowed);
   }
 };
 

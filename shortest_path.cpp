@@ -144,7 +144,6 @@ int main(int argc, char** argv)
     CME212::Color operator () (NodeType n){
       return CME212::Color::make_heat(1.0 - (float(n.value())/normalizer_) );
     }
-
     ColorFn(int normalizer) : normalizer_(normalizer){};
    private :
       const int normalizer_;
