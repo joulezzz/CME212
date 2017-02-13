@@ -1,4 +1,3 @@
-
 #ifndef CME212_GRAPH_HPP
 #define CME212_GRAPH_HPP
 
@@ -21,7 +20,7 @@
  * most one edge between any pair of distinct nodes).
  */
 // Allows Nodes to support user specified value of type node_value_type: Graph<V>
-template <typename V>
+template <typename V, typename E>
 class Graph {
  private:
 
@@ -38,6 +37,9 @@ class Graph {
 
   /** Type of the node values */
   using node_value_type = V;
+  /** Type of the node and edge values */
+  typedef V node_value_type;
+  typedef E edge_value_type;
 
   /** Type of this graph. */
   using graph_type = Graph;
@@ -118,7 +120,7 @@ class Graph {
     }
 
     /** Modifiable version of position*/
-    Point& position() const {
+    Point& position() {
       return graph_->nodes[uid_].first;
     }
 
@@ -132,21 +134,21 @@ class Graph {
 
     /**
      * @return The value of this node which is node_value_type
-	 */
+     */
     node_value_type & value (){
       return graph_->nodes[uid_].second;
     }
     
-   	/**
+       /**
      * @return The value of this node which is const node_value_type
-	 */
+     */
     const node_value_type & value () const {
       return graph_->nodes[uid_].second;
     }
 
-   	/**
+       /**
      * @return The number of nodes adjacent to this node
-	 */
+     */
     size_type degree() const {
       return graph_->adjacency[uid_].size();
 
@@ -154,9 +156,9 @@ class Graph {
 
     /**
      * @return An IncidentIterator that points to an edge adjacent to
-     * 		   the this node that is the first of the sequence of edges adjacent
+     *            the this node that is the first of the sequence of edges adjacent
      *         to this node
-	 */
+     */
     IncidentIterator edge_begin() const {
       return IncidentIterator(graph_, uid_, 0);
 
@@ -165,7 +167,7 @@ class Graph {
     /**
      * @return An IncidentIterator that does not point to an ajacent edge
      * indicating that all adjacent edges have been iterated through
-	 */
+     */
     IncidentIterator edge_end() const {
       return IncidentIterator(graph_, uid_, degree());
     }
@@ -280,6 +282,9 @@ class Graph {
     Edge() {
     }
 
+    edge_value_type& value();
+    const edge_value_type value() const;
+
     /** Return a node of this Edge */
     Node node1() const {
       return Node(graph_,node1_id);
@@ -302,6 +307,11 @@ class Graph {
         }
       }
       return false;
+    }
+
+    /** Return */ 
+    double length() const {
+        return norm_2(node1().position() - node2().position());
     }
 
     /** Test whether this edge is less than @a e in a global order.
@@ -438,13 +448,13 @@ class Graph {
      * @return The Node object that this NodeIterator points to
      */
     Node operator*() const {
-    	return Node(graph_ , index_points);
+        return Node(graph_ , index_points);
     }
 
     /** Increments the NodeIterator to point to the next Node or nullptr
      * @return NodeIterator that points to exactly one of the following:
-     *				1.) next Node object in the global order    if the global index this points to < nodes.size()
-     *				2.) nullptr                                 if the global index this points to = nodes.size(),  
+     *                1.) next Node object in the global order    if the global index this points to < nodes.size()
+     *                2.) nullptr                                 if the global index this points to = nodes.size(),  
      */
     NodeIterator& operator++(){
       index_points++;
@@ -474,10 +484,10 @@ class Graph {
 
  /** Returns the first NodeIterator
   * @return NodeIterator that points to the first Node in the global order if graph is nonempty, 
-  			otherwise returns a nullptr
+              otherwise returns a nullptr
   */
   NodeIterator node_begin() const {
-  	return NodeIterator(this, 0);
+      return NodeIterator(this, 0);
   }
 
  /** Returns a NodeIterator that indicates the end of the nodes
@@ -532,7 +542,7 @@ class Graph {
      * @return IncidentIterator to point to the next adjacent node or nullptr
      * @post IncidentIterator points to 
      *              1. next adjacent node if its local position order < degree()
-     *				2. nullptr if its local position order = degree()
+     *                2. nullptr if its local position order = degree()
      */
     IncidentIterator& operator++() {
       edge_index_++;
@@ -602,8 +612,8 @@ class Graph {
 
      /** Increments the EdgeIterator to point to the next Edge (in a global sense) or the nullptr
       * @return NodeIterator that points to exactly one of the following:
-      *				1.) if Edge global number < num_edges.size(), next Node 
-      *				2.) if Edge global number = num_edges(), nullptr 
+      *                1.) if Edge global number < num_edges.size(), next Node 
+      *                2.) if Edge global number = num_edges(), nullptr 
       */
     EdgeIterator& operator++() {
       edge_index_++;
