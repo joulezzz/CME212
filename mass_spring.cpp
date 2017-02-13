@@ -80,6 +80,7 @@ struct Problem1Force {
    * For HW2 #1, this is a combination of mass-spring force and gravity,
    * except that points at (0, 0, 0) and (1, 0, 0) never move. We can
    * model that by returning a zero-valued force. */
+  int K = 100;
   template <typename NODE>
   Point operator()(NODE n, double t) {
     // HW2 #1: YOUR CODE HERE
@@ -127,6 +128,11 @@ int main(int argc, char** argv)
 
   // HW2 #1 YOUR CODE HERE
   // Set initial conditions for your nodes, if necessary.
+  for (auto it = graph.node_begin(); it != graph.node_end(); ++it) {
+    auto n = *it;
+    n.value().vel = 0;
+    n.value().mass = 1.0/graph.num_nodes();
+  }
 
   // Print out the stats
   std::cout << graph.num_nodes() << " " << graph.num_edges() << std::endl;
