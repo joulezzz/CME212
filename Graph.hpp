@@ -117,6 +117,11 @@ class Graph {
       return graph_->nodes[uid_].first;
     }
 
+    /** Modifiable version of position*/
+    Point& position() const {
+      return graph_->nodes[uid_].first;
+    }
+
     /** Return this node's index, a number in the range [0, graph_size). */
     size_type index() const {
       return uid_;
