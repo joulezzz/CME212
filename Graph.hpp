@@ -36,7 +36,7 @@ class Graph {
   //
 
   /** Type of the node values */
-  using node_value_type = V;
+  //using node_value_type = V;
   /** Type of the node and edge values */
   typedef V node_value_type;
   typedef E edge_value_type;
@@ -282,8 +282,15 @@ class Graph {
     Edge() {
     }
 
-    edge_value_type& value();
-    const edge_value_type value() const;
+    /**
+     * @return The value of this node which is node_value_type
+     */
+    edge_value_type& value(){
+      return graph_->edge_values[uid_];
+    }
+    const edge_value_type value() const{
+      return graph_->edge_values[uid_];
+    }
 
     /** Return a node of this Edge */
     Node node1() const {
@@ -675,6 +682,8 @@ class Graph {
   // * @edges is a list containing pairs of nodes for each edge.
   //   The pair stored in position i corresponds to edge i.
   std::vector<std::pair<size_type, size_type>> edges;
+  // * @a edge_values is a list containing the values the correspond to ith edge
+  std::vector<E> edge_values;
   // * @adjacency is a vector containing vector with pairs. It contains
   //   at position i the pairs of each node adjacent to node i and the
   //   the edge id that connect node i to the adjacent node.

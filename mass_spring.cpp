@@ -82,7 +82,7 @@ struct Problem1Force {
    * model that by returning a zero-valued force. */
   Point total_force;
   Point force_spring(0,0,0);
-  Point force_gravity;
+  Point force_gravity(0,0,0);
 
   template <typename NODE>
   Point operator()(NODE n, double t) {
@@ -102,8 +102,6 @@ struct Problem1Force {
     force_spring_z += -e.value().k*diff_z/abs(diff.z)*(abs(diff_z) - e.value().L);
     }
     // Compute x,y,z gravitational force components 
-    force_gravity.x = 0;
-    force_gravity.y = 0;
     force_gravity.z = -grav;
     // Compute x,y,z total force components 
     total_force.x = force_spring.x + force_gravity.x;
