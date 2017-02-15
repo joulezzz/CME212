@@ -28,6 +28,7 @@ static constexpr double grav = 9.81;
 struct NodeData {
   Point vel;       //< Node velocity
   double mass;     //< Node mass
+  //double c; // Node damping coefficient
   NodeData() : vel(0), mass(1) {}
 };
 
@@ -97,7 +98,7 @@ struct Problem1Force {
   Point operator()(NODE n, double t) {
     // HW2 #1: YOUR CODE HERE
     Point force_spring = Point(0,0,0);
-    Point force_gravity = Point(0,0,-grav);
+    Point force_gravity = n.value().mass*Point(0,0,-grav);
     // Compute x,y,z spring force components 
     for (auto it = n.edge_begin(); it != n.edge_end(); ++it){
 	if (n.position() == Point(0,0,0) || n.position() == Point(1,0,0)){
@@ -105,18 +106,61 @@ struct Problem1Force {
         }
         auto e = *it;
 	Point diff = n.position() - e.node2().position();
-        std::cout << norm(diff) << std::endl;
-	force_spring += -100*diff/norm( diff )*( norm(diff) - 0.0416667);
+	force_spring += -e.value().K*diff/norm( diff )*( norm(diff) - e.value().L );
     }
     // Compute x,y,z total force components 
     //(void) n; 
     (void) t; // (void) grav;    // silence compiler warnings
     //std::cout << force_spring << std::endl;
-    return force_spring + n.value().mass*force_gravity;
+    return force_spring + force_gravity;
   }
 };
 
+// implements the force of gravity
+struct GravityForce {
+  template <typename NODE>
+  Point operator()(NODE n, double t) {
+    Point force_gravity = n.value().mass*Point(0,0,-grav); 
+    (void) t; // silence compiler warnings
+    return force_gravity;
+  }
+};
+// implements the spring forces
+struct MassSpringForce {
+  template <typename NODE>
+  Point operator()(NODE n, double t) {
+    Point force_spring = Point(0,0,0);
+    // Compute x,y,z spring force components 
+    for (auto it = n.edge_begin(); it != n.edge_end(); ++it){
+	if (n.position() == Point(0,0,0) || n.position() == Point(1,0,0)){
+	    return Point(0,0,0);
+        }
+        auto e = *it;
+	Point diff = n.position() - e.node2().position();
+	force_spring += -e.value().K*diff/norm( diff )*( norm(diff) - e.value().L );
+    }
+    // Compute x,y,z total force components  
+    (void) t; // (void) grav;    // silence compiler warnings
+    return force_spring;
+  }
+};
+// implements the damping force
+struct DampingForce {
+  template <typename NODE>
+  Point operator()(NODE n, double t) {
+    Point force_damping = -node.value().vel*c; 
+    (void) t; // silence compiler warnings
+    return force_gravity;
+  }
+};
 
+// return the aggregate force
+Point make_combined_force(Point f1, Point f2){
+ return f1 + f2;
+}
+Point make_combined_force(Point f1, Point f2, Point f3){
+ return f1+f2+f3;
+}
 
 int main(int argc, char** argv)
 {
@@ -144,11 +188,11 @@ int main(int argc, char** argv)
   while (CME212::getline_parsed(tets_file, t)) {
     graph.add_edge(nodes[t[0]], nodes[t[1]]);
     graph.add_edge(nodes[t[0]], nodes[t[2]]);
-#if 0
+//#if 0
     // Diagonal edges: include as of HW2 #2
     graph.add_edge(nodes[t[0]], nodes[t[3]]);
     graph.add_edge(nodes[t[1]], nodes[t[2]]);
-#endif
+//#endif
     graph.add_edge(nodes[t[1]], nodes[t[3]]);
     graph.add_edge(nodes[t[2]], nodes[t[3]]);
   }
@@ -160,9 +204,9 @@ int main(int argc, char** argv)
     n.value().vel = Point(0,0,0);
     n.value().mass = 1.0/graph.num_nodes();
   }
-  for (auto it = graph.edge_begin(); it != graph.edge_begin(); ++it) {
+  for (auto it = graph.edge_begin(); it != graph.edge_end(); ++it) {
     auto e = *it;
-    e.value() = EdgeData(100.0,e.length());
+    e.value() = EdgeData(100.00, e.length());
   }
 
   // Print out the stats
