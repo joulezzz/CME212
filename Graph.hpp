@@ -285,10 +285,10 @@ class Graph {
     /**
      * @return The value of this node which is node_value_type
      */
-    edge_value_type& value(){
+    edge_value_type & value(){
       return graph_->edge_values[uid_];
     }
-    const edge_value_type value() const{
+    const edge_value_type & value() const{
       return graph_->edge_values[uid_];
     }
 
@@ -318,7 +318,7 @@ class Graph {
 
     /** Return */ 
     double length() const {
-        return norm_2(node1().position() - node2().position());
+        return norm(node1().position() - node2().position());
     }
 
     /** Test whether this edge is less than @a e in a global order.
@@ -395,14 +395,18 @@ class Graph {
    *
    * Complexity: No more than O(num_nodes() + num_edges()), hopefully less
    */
-  Edge add_edge(const Node& a, const Node& b) {
+  Edge add_edge(const Node& a, const Node& b, const edge_value_type& new_value = edge_value_type() ) {
     for (unsigned int i=0; i<adjacency[a.uid_].size(); i++)
        if (b.uid_ == adjacency[a.uid_][i].first)
          return Edge(this, adjacency[a.uid_][i].second, a.uid_, b.uid_);
-    if (a<b)
+    if (a<b){
       edges.push_back(std::make_pair(a.uid_,b.uid_));
-    else
+      edge_values.push_back(new_value);
+    }
+    else{
       edges.push_back(std::make_pair(b.uid_,a.uid_));
+      edge_values.push_back(new_value);
+    }
     adjacency[a.uid_].push_back(std::make_pair(b.uid_,edges.size()-1));
     adjacency[b.uid_].push_back(std::make_pair(a.uid_,edges.size()-1));
     return Edge(this,edges.size()-1,a.uid_,b.uid_);

@@ -11,6 +11,7 @@
 #include <fstream>
 #include <chrono>
 #include <thread>
+//#include <cmath>
 
 #include "CME212/SFML_Viewer.hpp"
 #include "CME212/Util.hpp"
@@ -30,8 +31,18 @@ struct NodeData {
   NodeData() : vel(0), mass(1) {}
 };
 
+struct EdgeData {
+  double K; // spring constant
+  double L; // edge legnth at time 0
+  EdgeData(double spring_constant, double init_length){
+     K = spring_constant;
+     L = init_length;
+  }
+  EdgeData() {}
+};
+
 // Define the Graph type
-using GraphType = Graph<NodeData>;
+using GraphType = Graph<NodeData, EdgeData>;
 using Node = typename GraphType::node_type;
 using Edge = typename GraphType::edge_type;
 
@@ -80,35 +91,28 @@ struct Problem1Force {
    * For HW2 #1, this is a combination of mass-spring force and gravity,
    * except that points at (0, 0, 0) and (1, 0, 0) never move. We can
    * model that by returning a zero-valued force. */
-  Point total_force;
-  Point force_spring(0,0,0);
-  Point force_gravity(0,0,0);
-
+  // Member variables
+  // Constructor | Initializer
   template <typename NODE>
   Point operator()(NODE n, double t) {
     // HW2 #1: YOUR CODE HERE
-    
+    Point force_spring = Point(0,0,0);
+    Point force_gravity = Point(0,0,-grav);
     // Compute x,y,z spring force components 
-    for (auto it = n.edge_begin(); it! = edge_end(); ++it){
-    auto e = *it;
-        // x - dir
-    Point diff_x = n.position().x - e.node2().position().x ;
-    force_spring_x += -e.value().K*diff_x/abs(diff.x)*(abs(diff_x) - e.value().L);
-        // y - dir
-        Point diff_y = n.position().y - e.node2().position().y );
-    force_spring_y += -e.value().K*diff_y/abs(diff.y)*(abs(diff_y) - e.value().L);
-        // z - dir
-        Point diff_z = n.position().z - e.node2().position().z );
-    force_spring_z += -e.value().k*diff_z/abs(diff.z)*(abs(diff_z) - e.value().L);
+    for (auto it = n.edge_begin(); it != n.edge_end(); ++it){
+	if (n.position() == Point(0,0,0) || n.position() == Point(1,0,0)){
+	    return Point(0,0,0);
+        }
+        auto e = *it;
+	Point diff = n.position() - e.node2().position();
+        std::cout << norm(diff) << std::endl;
+	force_spring += -100*diff/norm( diff )*( norm(diff) - 0.0416667);
     }
-    // Compute x,y,z gravitational force components 
-    force_gravity.z = -grav;
     // Compute x,y,z total force components 
-    total_force.x = force_spring.x + force_gravity.x;
-    total_force.x = force_spring.y + force_gravity.y;
-    total_force.z = force_spring.z + force_gravity.z;
-    //(void) n; (void) t; (void) grav;    // silence compiler warnings
-    return total_force;
+    //(void) n; 
+    (void) t; // (void) grav;    // silence compiler warnings
+    //std::cout << force_spring << std::endl;
+    return force_spring + n.value().mass*force_gravity;
   }
 };
 
@@ -155,6 +159,10 @@ int main(int argc, char** argv)
     auto n = *it;
     n.value().vel = Point(0,0,0);
     n.value().mass = 1.0/graph.num_nodes();
+  }
+  for (auto it = graph.edge_begin(); it != graph.edge_begin(); ++it) {
+    auto e = *it;
+    e.value() = EdgeData(100.0,e.length());
   }
 
   // Print out the stats
