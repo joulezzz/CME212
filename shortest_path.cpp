@@ -33,6 +33,9 @@ using NodeIter  = typename GraphType::node_iterator;
  * @post For all i, 0 <= i < graph.num_nodes(),
  *          norm(point - *result) <= norm(point - g.node(i).position())
  */
+//--comment
+//--Use std::min_element - will be more efficient
+//--START
 NodeIter nearest_node(const GraphType& g, const Point& point)
 {
   // HW1 #3: YOUR CODE HERE
@@ -50,7 +53,7 @@ NodeIter nearest_node(const GraphType& g, const Point& point)
   }
   return min_ni;
 }
-
+//--END
 /** Update a graph with the shortest path lengths from a root node.
  * @param[in,out] g     Input graph
  * @param[in,out] root  Root node to start the search.
@@ -132,11 +135,15 @@ int main(int argc, char** argv)
   // Use nearest_node and shortest_path_lengths to set the node values
   // Construct a Color functor and view with the SFML_Viewer
   Point point(-1,0, 1);
+//--comment
+//--Should check if iterator returned by nearest_node is valid
+//--START
   NodeIter closest_iter = nearest_node(graph, point);
   auto root = *closest_iter;
   
   int longest_path = shortest_path_lengths(graph, root);
-  auto node_map = viewer.empty_node_map(graph);
+//--END  
+auto node_map = viewer.empty_node_map(graph);
   
   struct ColorFn {
     CME212::Color operator () (NodeType n){

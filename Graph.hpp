@@ -665,5 +665,10 @@ class Graph {
   //   the edge id that connect node i to the adjacent node.
   std::vector<std::vector<std::pair<size_type, size_type>>> adjacency;
 };
-
+//--comment
+//--Could have been more creative with subgraph implementation of tiny
+//--and large datasets.
+//--More discipline in documentation expected.
+//--END
+//--grade8
 #endif // CME212_GRAPH_HPP
