@@ -85,6 +85,14 @@ class Graph {
   /** Default destructor */
   ~Graph() = default;
 
+  size_type remove_node(const Node& );
+  node_iterator remove-node(node_iterator n_it);
+  size_type remove_edge(const Node&, const Node&);
+  size_type remove_edge(const Edge&);
+  edge_iterator remove_edge(edge_iterator e_it);
+  
+
+
   //
   // NODES
   //
