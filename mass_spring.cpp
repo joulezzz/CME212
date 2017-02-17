@@ -79,8 +79,10 @@ double symp_euler_step(G& g, double t, double dt, F force) {
 
     // v^{n+1} = v^{n} + F(x^{n+1},t) * dt / m
     n.value().vel += force(n, t) * (dt / n.value().mass);
+    if (n.position() == Point(0,0,0) || n.position() == Point(1,0,0)){
+	    n.value().vel = Point(0,0,0);
+    }
   }
-
   return t + dt;
 }
 
@@ -132,9 +134,6 @@ struct MassSpringForce {
     Point force_spring = Point(0,0,0);
     // Compute x,y,z spring force components 
     for (auto it = n.edge_begin(); it != n.edge_end(); ++it){
-	if (n.position() == Point(0,0,0) || n.position() == Point(1,0,0)){
-	    return Point(0,0,0);
-        }
         auto e = *it;
 	Point diff = n.position() - e.node2().position();
 	force_spring += -e.value().K*diff/norm( diff )*( norm(diff) - e.value().L );
@@ -146,21 +145,88 @@ struct MassSpringForce {
 };
 // implements the damping force
 struct DampingForce {
+  double c; // damping coefficient
   template <typename NODE>
   Point operator()(NODE n, double t) {
-    Point force_damping = -node.value().vel*c; 
+    Point force_damping = -n.value().vel*c; 
     (void) t; // silence compiler warnings
-    return force_gravity;
+    return force_damping;
   }
 };
 
-// return the aggregate force
-Point make_combined_force(Point f1, Point f2){
- return f1 + f2;
+// implements the damping force
+template<typename Force1, typename Force2>
+struct CombinedForce {
+  Force1 f1;
+  Force2 f2;
+  template <typename NODE>
+  Point operator()(NODE n, double t) {
+    return f1(n,t) + f2(n,t);
+  }
+};
+
+template<typename Force1, typename Force2>
+CombinedForce<Force1, Force2> make_combined_force(Force1 f1, Force2 f2){
+ return {f1,f2};
 }
-Point make_combined_force(Point f1, Point f2, Point f3){
- return f1+f2+f3;
+
+template<typename Force1, typename Force2, typename Force3>
+CombinedForce<CombinedForce<Force1, Force2>, Force3> make_combined_force(Force1 f1, Force2 f2, Force3 f3){
+ return make_combined_force(make_combined_force(f1,f2), f3);
 }
+
+// if norm( n.position() - Point(0.5, 0.5, -0.5) ) < radius // violated (here radius = 0.15)
+//	n.remove_node(); // removes node and all of its edges
+
+
+struct PlaneConstraint {
+  template<typename GRAPH>
+  void operator()(GRAPH graph, double t){
+	(void) t;
+  	for (auto it = graph.node_begin(); it != graph.node_end(); ++it){
+		auto n = *it;
+		if (dot(n.position(), Point(0,0,1)) < -0.75){
+			n.value().vel.z = 0.0;
+			n.position().z = -0.75;
+		}
+	} 
+  }
+};
+
+struct SphereConstraint1 {
+  template<typename GRAPH>
+  void operator()(GRAPH graph, double t){
+	(void) t;
+	double radius = 0.15;
+	Point sphere_center = Point(0.5,0.5,-0.5);
+	for (auto it = graph.node_begin(); it != graph.node_end(); ++it){
+		auto n = *it;
+		Point diff = n.position() - sphere_center;
+		Point R = (diff / norm( diff ));
+		if ( norm( diff ) < radius ) {
+			n.position() = R*radius;
+			n.value().vel = n.value().vel - dot(n.value().vel,R)*R;
+		}
+	}
+  }
+};
+
+struct SphereConstraint2 {
+  template<typename GRAPH>
+  void operator()(GRAPH graph, double t){
+	(void) t;
+	double radius = 0.15;
+	Point sphere_center = Point(0.5,0.5,-0.5);
+	for (auto it = graph.node_begin(); it != graph.node_end(); ++it){
+		auto n = *it;
+		Point diff = n.position() - sphere_center;
+		if ( norm( diff ) < radius ) {
+			n.remove_nodes();
+		}
+	}
+  }
+};
+
 
 int main(int argc, char** argv)
 {
@@ -209,6 +275,13 @@ int main(int argc, char** argv)
     e.value() = EdgeData(100.00, e.length());
   }
 
+  double c = 1.0/graph.num_nodes(); // damping coefficient
+  DampingForce force_damping{c};
+  MassSpringForce force_spring;
+  GravityForce force_gravity;
+  auto total_force = make_combined_force(force_damping, force_spring, force_gravity);
+  
+
   // Print out the stats
   std::cout << graph.num_nodes() << " " << graph.num_edges() << std::endl;
 
@@ -233,10 +306,15 @@ int main(int argc, char** argv)
 
       for (double t = t_start; t < t_end && !interrupt_sim_thread; t += dt) {
         //std::cout << "t = " << t << std::endl;
-        symp_euler_step(graph, t, dt, Problem1Force());
-
+        symp_euler_step(graph, t, dt, total_force); // replace Problem1Force() with CombinedForce()
+	
+	// clear the viewer's nodes and edges 
+	viewer.clear();
+	node_map.clear();	
+	
         // Update viewer with nodes' new positions
         viewer.add_nodes(graph.node_begin(), graph.node_end(), node_map);
+	viewer.add_edges(graph.edge_begin(), graph.edge_end(), node_map);
         viewer.set_label(t);
 
         // These lines slow down the animation for small graphs, like grid0_*.
