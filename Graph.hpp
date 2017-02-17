@@ -85,11 +85,7 @@ class Graph {
   /** Default destructor */
   ~Graph() = default;
 
-  size_type remove_node(const Node& );
-  node_iterator remove-node(node_iterator n_it);
-  size_type remove_edge(const Node&, const Node&);
-  size_type remove_edge(const Edge&);
-  edge_iterator remove_edge(edge_iterator e_it);
+
   
 
 
@@ -223,6 +219,36 @@ class Graph {
     // that will not be visible to users, but may be useful within Graph.
     // i.e. Graph needs a way to construct valid Node objects
   };
+
+  // returns the number of nodes removed (aka 0 or 1)
+  size_type remove_node(const Node& n){
+	// get the nodes global number
+	size_type node_uid = n.index();
+	n = nodes.back();
+	nodes.pop_back();
+	size_type incident_edge_number
+	// remove edges from nodes ajacent to n 
+	for (unsigned int i = 0; i < adjacency[n.index()].size(); i++){
+		incident_edge_number = adjacency[n.index()][i];
+		adjacency[i][incident_edge_number] = = adjacency[i].back(); 
+		adjacency[i].pop_back();
+	}
+	// remove edges incident to node n
+	adjacency[n.index()] = adjacency.back();
+	adjacency.pop_back();
+  }
+  // returns node iterator that points to the next node
+  node_iterator remove-node(node_iterator n_it){
+  }
+  // returns the numbers of edges removed (aka 0 or 1)
+  size_type remove_edge(const Node&, const Node&){
+  }
+  // returns the number of edges removed (aka 0 or 1)
+  size_type remove_edge(const Edge&){
+  }
+  // returns edge iterator that points to the next node
+  edge_iterator remove_edge(edge_iterator e_it){
+  }
 
   /** Return the number of nodes in the graph.
    *
