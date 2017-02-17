@@ -222,16 +222,16 @@ class Graph {
 
   // returns the number of nodes removed (aka 0 or 1)
   size_type remove_node(const Node& n){
-	// get the nodes global number
-	size_type node_uid = n.index();
-	n = nodes.back();
-	nodes.pop_back();
-	size_type incident_edge_number
-	// remove edges from nodes ajacent to n 
-	for (unsigned int i = 0; i < adjacency[n.index()].size(); i++){
-		incident_edge_number = adjacency[n.index()][i];
-		adjacency[i][incident_edge_number] = = adjacency[i].back(); 
-		adjacency[i].pop_back();
+    // remove edges from nodes ajacent to n 
+    for (unsigned int i = 0; i < adjacency[n.index()].size(); i++){
+      // node and edge numbers that are agjacent/incident 
+      adj_node_uid = adjacency[n.index()][i].first;
+      incident_edge_number = adjacency[n.index()][i].second;
+      auto it = IncidentIterator(*this, adj_node_uid, incident_edge_number);
+      edge_id_for_n2 = it.edge_index_;
+    }
+
+
 	}
 	// remove edges incident to node n
 	adjacency[n.index()] = adjacency.back();
@@ -241,13 +241,26 @@ class Graph {
   node_iterator remove-node(node_iterator n_it){
   }
   // returns the numbers of edges removed (aka 0 or 1)
-  size_type remove_edge(const Node&, const Node&){
+  size_type remove_edge(const Node& a, const Node& b){
+    if (has_edge(a, b) == 1) {
+      
+    }
   }
   // returns the number of edges removed (aka 0 or 1)
-  size_type remove_edge(const Edge&){
+  size_type remove_edge(const Edge& edge){
+    //remove the edge from the edges container
+    if (has_edge(const Node& a, const Node& b) == 1) {
+      edges[edge.uid_] = edges.back();
+      edges.pop_back();
+      //remove the corresponding value from the edge values container
+      edge_values[edge.uid_] = edges.back();
+      edge_values.pop_back();
+      return 1;
+    }
+    return 0;
   }
   // returns edge iterator that points to the next node
-  edge_iterator remove_edge(edge_iterator e_it){
+  edge_iterator remove_edge(edge_iterator it){
   }
 
   /** Return the number of nodes in the graph.
