@@ -214,16 +214,16 @@ struct SphereConstraint1 {
 struct SphereConstraint2 {
   template<typename GRAPH>
   void operator()(GRAPH graph, double t){
-	(void) t;
-	double radius = 0.15;
-	Point sphere_center = Point(0.5,0.5,-0.5);
-	for (auto it = graph.node_begin(); it != graph.node_end(); ++it){
-		auto n = *it;
-		Point diff = n.position() - sphere_center;
-		if ( norm( diff ) < radius ) {
-			n.remove_nodes();
-		}
-	}
+    (void) t;
+    double radius = 0.15;
+    Point sphere_center = Point(0.5,0.5,-0.5);
+    for (auto it = graph.node_begin(); it != graph.node_end(); ++it){
+      auto n = *it;
+      Point diff = n.position() - sphere_center;
+      if ( norm( diff ) < radius ) {
+        n.remove_node();
+      }
+    }
   }
 };
 
