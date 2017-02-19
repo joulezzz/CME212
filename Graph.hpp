@@ -132,7 +132,7 @@ class Graph {
     /** Return this node's index, a number in the range [0, graph_size). */
     size_type index() const {
       //return idx_; // 
-      return uid_; // changed
+      return graph_->nodes_[uid_].idx_; // uid_; // changed
     }
 
     // HW1: YOUR CODE HERE
@@ -276,7 +276,7 @@ class Graph {
    * Complexity: O(1).
    */
   size_type size() const {
-    return nodes_.size(); // recall nodes is a vector, size is its method
+    return i2u_nodes_.size(); //nodes_.size(); // recall nodes is a vector, size is its method
   }
 
   /** Synonym for size(). */
@@ -294,9 +294,11 @@ class Graph {
    */
   Node add_node(const Point& position, const node_value_type& new_value = node_value_type()) {
     //nodes.push_back(position);
-    nodes_.push_back(std::make_pair(position, new_value));
+    size_type idx = nodes_.size();
+    //nodes_.push_back(std::make_pair(position, new_value));
+    nodes_.push_back({position, new_value, idx})
     adjacency_.push_back(std::vector<std::pair<size_type, size_type>> ()); 
-    //i2u_n.push_back(nodes.size()-1);
+    i2u_nodes_.push_back(idx);
     return Node(this,nodes_.size()-1); 
   }
 
@@ -307,7 +309,7 @@ class Graph {
    */
   bool has_node(const Node& n) const {
     if (n.graph_ == this)
-      if (n.uid_<nodes_.size())
+      if ( nodes_[n.uid_].idx_ < i2u_nodes_.size() ) // 
         return true;
     return false;
   }
@@ -319,7 +321,7 @@ class Graph {
    * Complexity: O(1).
    */
   Node node(size_type i) const {
-    return Node(this, i);
+    return Node(this, i2u_nodes_[i]);
   }
 
   //
@@ -515,6 +517,7 @@ class Graph {
      * @pre 0 <= @a i < num_nodes()
      */
     NodeIterator(const Graph* g, size_type i): graph_(g), uid_(i) {
+      uid_ = graph_->i2u_nodes_[i]; // replaced uid
     }
 
     // HW1 #2: YOUR CODE HERE
@@ -533,8 +536,8 @@ class Graph {
      *                2.) nullptr                                 if the global index this points to = nodes_.size(),  
      */
     NodeIterator& operator++(){
-
-      uid_++;
+      uid_ = i2u_nodes_[graph_->nodes_[uid].idx_ + 1];
+      //uid_++;
       return  *this;
 
     }
@@ -564,14 +567,15 @@ class Graph {
               otherwise returns a nullptr
   */
   NodeIterator node_begin() const {
-      return NodeIterator(this, 0);
+
+      return NodeIterator(this, i2u_nodes_[0]);
   }
 
  /** Returns a NodeIterator that indicates the end of the nodes
   * @return NodeIterator that is the nullptr 
   */
   NodeIterator node_end() const {
-    return NodeIterator(this, nodes_.size());
+    return NodeIterator( this, i2u_nodes_.size() ); // nodes_.size());
   }
 
   //
@@ -747,7 +751,7 @@ class Graph {
   // Use this space for your Graph class's internals:
   //   helper functions, data members, and so forth.
   
-  /**
+  
   struct nodeinfo{
     Point p_; // position
     V v_; // value
@@ -759,14 +763,13 @@ class Graph {
     size_type node2_uid_;
     E v_; // value
   };
-  */
+  
 
   // * @nodes_ is a list with the position of node @i in index i
   //std::vector<Point> nodes;
-  //std::vector<nodeinfo> nodes_;
-  std::vector<std::pair<Point,V>> nodes_; // indexed by node uid
+  std::vector<nodeinfo> nodes_; // std::vector<std::pair<Point,V>> nodes_; // indexed by node uid
   // * @i2u_nodes_ is a list such that udx_ = i2u_nodes[idx_]
-  //std::vector<size_type> i2u_nodes_; // indexed by node idx
+  std::vector<size_type> i2u_nodes_; // indexed by node idx
 
 
   // * @edges_ is a list containing pairs of nodes for each edge.
