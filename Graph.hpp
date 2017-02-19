@@ -222,22 +222,24 @@ class Graph {
     // i.e. Graph needs a way to construct valid Node objects
   };
 
+
+
+
+
+
+
+
   // returns the number of nodes removed (aka 0 or 1)
   size_type remove_node(const Node& n){
-    // remove edges from nodes ajacent to n 
-    if has_node(n){
-      for (unsigned int i = 0; i < adjacency_[n.index()].size(); i++){
-        // remove this incident edge from the adjacent nodes
-        size_type adj_idx = u2i_adj[adjacency_[n.index()][i]];
-        adjacency_[adjacency_[n.index()][i].first][adj_idx] = adjacency_[adjacency_[n.index()][i].first].back();
-        adjacency_[adjacency_[n.index()][i].first].pop_back();
-        // remove this edge entirely
-        edges[adjacency_[n.index()][i].second] = edges.back();
-        edges.pop_back();
-      }
-    // remove edges incident to node n
-    adjacency_[n.index()] = adjacency_.back();
-    adjacency_.pop_back();
+    if n.valid()
+    //remove node
+    i2u_nodes_[nodes_[n.uid_].idx_] = i2u_nodes_.back();
+    i2u_nodes_.pop_back();
+    //find edges to remove
+    for (unsigned int j = 0; j < adjacency_[n.uid_].size(); i++){
+      size_type edge_uid = adjacency_[n.uid_][j].second
+      i2u_edges_[edges_[edge_uid].idx_] = i2u_edges_.back();
+      i2u_edges_.pop_back();
     }
 	}
 
@@ -247,29 +249,20 @@ class Graph {
 
   // returns the numbers of edges removed (aka 0 or 1)
   size_type remove_edge(const Node& a, const Node& b){
-    if (has_edge(a, b) == 1) {
-
-    }
   }
+
   // returns the number of edges removed (aka 0 or 1)
   size_type remove_edge(const Edge& edge){
-    if (has_edge(edge.node1(), edge.node2()) == 1) {
-      // remove the edge index from container
-      edges_[edge.index()] = edges_.back();
-      edges_.pop_back();
-      //remove the corresponding value from the edge values container
-      edge_values_[edge.index()] = edge_values_.back();
-      edge_values_.pop_back();
-      // remove corresponding data from adjacency list
-      size_type adj_idx_1 = u2i_adj[std::makepair(edge.node1(),edge.index())]
-      adjacency_[edge.node1()][]
-      return 1;
-    }
-    return 0;
   }
+
   // returns edge iterator that points to the next node
   edge_iterator remove_edge(edge_iterator it){
   }
+
+
+
+
+
 
   /** Return the number of nodes in the graph.
    *
@@ -321,7 +314,7 @@ class Graph {
    * Complexity: O(1).
    */
   Node node(size_type i) const {
-    return Node(this, i2u_nodes_[i]);
+    return Node(this, i2u_nodes_[i]); 
   }
 
   //
@@ -768,7 +761,7 @@ class Graph {
   // * @nodes_ is a list with the position of node @i in index i
   //std::vector<Point> nodes;
   std::vector<nodeinfo> nodes_; // std::vector<std::pair<Point,V>> nodes_; // indexed by node uid
-  // * @i2u_nodes_ is a list such that udx_ = i2u_nodes[idx_]
+  // * @i2u_nodes_ is a list such that udx_ = i2u_nodes_[idx_]
   std::vector<size_type> i2u_nodes_; // indexed by node idx
 
 
