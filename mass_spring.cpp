@@ -221,11 +221,29 @@ struct SphereConstraint2 {
       auto n = *it;
       Point diff = n.position() - sphere_center;
       if ( norm( diff ) < radius ) {
-        n.remove_node();
+        graph.remove_node(n);
       }
     }
   }
 };
+
+template <typename Contraint1, typename Contraint2, typename Constraint3>
+struct CombinedConstraints {
+  Constraint1 c1;
+  Constraint2 c2;
+  Constraint3 c3;
+
+  void operator()(GraphType& graph, double t){
+    c1(graph,t);
+    c2(graph,t);
+    c3(graph,t);
+  }
+};
+
+template<typename Constraint1, typename Constaint2, typename Constraint3>
+CombinedForce<Constraint1, Constraint2, Constraint3> make_combined_constaints(Constraint1 c1, Constraint2 c2, Constraint c3){
+ return {c1,c2, c3};
+}
 
 
 int main(int argc, char** argv)
@@ -280,6 +298,12 @@ int main(int argc, char** argv)
   MassSpringForce force_spring;
   GravityForce force_gravity;
   auto total_force = make_combined_force(force_damping, force_spring, force_gravity);
+
+  PlaneConstraint constraint1;
+  SphereConstraint1 constraint2;
+  SphereConstraint2 constraint3;
+
+  auto all_constraints = make_combined_constaints(constraint1, constraint2, constraint3);
   
 
   // Print out the stats
