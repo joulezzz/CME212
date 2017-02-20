@@ -213,7 +213,7 @@ class Graph {
     // Allow Graph to access Node's private member data and functions.
     friend class Graph;
     Graph* graph_;
-    size_type uid_; // refers to 
+    size_type uid_; // refers to the local number of the edge (so like the 5th incident edge)
     Node(const Graph* graph_pointer, size_type uid)
         : graph_( const_cast<Graph*>(graph_pointer) ), uid_( uid ) {
     }
