@@ -213,7 +213,7 @@ class Graph {
     // Allow Graph to access Node's private member data and functions.
     friend class Graph;
     Graph* graph_;
-    size_type uid_;
+    size_type uid_; // refers to 
     Node(const Graph* graph_pointer, size_type uid)
         : graph_( const_cast<Graph*>(graph_pointer) ), uid_( uid ) {
     }
@@ -235,11 +235,22 @@ class Graph {
       //remove node
       i2u_nodes_[nodes_[n.uid_].idx_] = i2u_nodes_.back();
       i2u_nodes_.pop_back();
+      // swap/update both idx
+      size_type temp = nodes_.back().idx_
+      nodes_.back().idx_ = nodes_[n.uid_].idx_;
+      nodes_[n.uid_].idx_ = temp;
+
+
       //find edges to remove
       for (unsigned int j = 0; j < adjacency_[n.uid_].size(); i++){
         size_type edge_uid = adjacency_[n.uid_][j].second
         i2u_edges_[edges_[edge_uid].idx_] = i2u_edges_.back();
         i2u_edges_.pop_back();
+        // swap/update both idx
+        size_type temp = edges_.back().idx_
+        edges_.back().idx_ = edges_[edge_uid].idx_;
+        edges_[n.uid_].idx_ = temp;
+
       }
       return 1;
     }
@@ -380,10 +391,10 @@ class Graph {
      * @return The value of this node which is node_value_type
      */
     edge_value_type & value(){
-      return graph_->edge_values_[uid_];
+      return graph_->edges_[uid_].v_;
     }
     const edge_value_type & value() const{
-      return graph_->edge_values_[uid_];
+      return graph_->edges_[uid_].v_;
     }
 
     /** Return a node of this Edge */
@@ -547,12 +558,20 @@ class Graph {
 
     /** Constructor for a NodeIterator
      * @param[in] g The an object of type Graph
-     * @param[in] uidThe value of of type size_type
+     * @param[in] idx The value of of type size_type
      * @return NodeIterator that belongs to @a g and points to the @a uid'th Node in a global order 
-     * @pre 0 <= @a i < num_nodes()
+     * @pre 0 <= @a idx <= num_nodes()
      */
-    NodeIterator(const Graph* g, size_type uid): graph_(g), uid_(uid) {
-      uid_ = graph_->i2u_nodes_[uid]; // replaced uid
+    NodeIterator(const Graph* g, size_type idx): graph_(g) { // uid_(uid) {
+      //if given a nodes number that user thinks node is at
+      if ( idx < graph_->i2u_nodes_.size() ) {
+        // point to actual node index
+        uid_ = graph_->i2u_nodes_[idx]; // replaced uid
+      }
+      else {
+        // if given the end of the list, then
+        uid_ = graph_->nodes_.size(); // the actual end of the list
+      }
     }
 
     // HW1 #2: YOUR CODE HERE
@@ -571,7 +590,7 @@ class Graph {
      *                2.) nullptr                                 if the global index this points to = nodes_.size(),  
      */
     NodeIterator& operator++(){
-      uid_ = i2u_nodes_[graph_->nodes_[uid_].idx_ + 1];
+      uid_ = graph_->i2u_nodes_[ ( graph_->nodes_[uid_].idx_ + 1 ) ];
       //uid_++;
       return  *this;
 
@@ -603,7 +622,7 @@ class Graph {
   */
   NodeIterator node_begin() const {
 
-      return NodeIterator(this, i2u_nodes_[0]);
+      return NodeIterator(this, 0);
   }
 
  /** Returns a NodeIterator that indicates the end of the nodes
@@ -680,8 +699,8 @@ class Graph {
    private:
     friend class Graph;
     const Graph *graph_;
-    size_type node_uid_;
-    size_type edge_uid_; 
+    size_type node_uid_; //global order
+    size_type edge_uid_; //local order 
 
 
     // HW1 #3: YOUR CODE HERE
@@ -711,10 +730,18 @@ class Graph {
      * @param[in] graph An object of Graph
      * @param[in] edge_index A value of size_type
      * @return EdgeIterator that belongs to @a graph and points to the Edge that has @a edge_index in global order
-     * @pre 0 <= @a edge_index < num_edges()
+     * @pre 0 <= @a idx < num_edges()
      */
-    EdgeIterator(const Graph* graph, size_type uid) : graph_(graph), uid_(uid) {
-      uid_ = graph_->i2u_edges_[uid]; // replaced uid
+    EdgeIterator(const Graph* graph, size_type idx) : graph_(graph) { // uid_(uid) {
+      //if given a nodes number that user thinks node is at
+      if ( idx < graph_->i2u_edges_.size() ) {
+        // point to actual node index
+        uid_ = graph_->i2u_nodes_[idx]; // replaced uid
+      }
+      else {
+        // if given the end of the list, then
+        uid_ = graph_->nodes_.size(); // the actual end of the list
+      }
     }
 
     // HW1 #5: YOUR CODE HERE
@@ -733,7 +760,7 @@ class Graph {
       *                2.) if Edge global number = num_edges(), nullptr 
       */
     EdgeIterator& operator++() {
-      uid_ = i2u_nodes_[graph_->edges_[uid_].idx_ + 1];
+      uid_ = graph_->i2u_nodes_[ ( graph_->edges_[uid_].idx_ + 1 ) ];
       //uid_++;
       return *this;
     }
@@ -770,7 +797,7 @@ class Graph {
    *       otherwise it will return a nullptr
    */
   EdgeIterator edge_begin() const {
-    return EdgeIterator(this, i2u_edges_[0]); // 0
+    return EdgeIterator(this, 0); // 0
 
   }
 
@@ -780,7 +807,6 @@ class Graph {
    */
   EdgeIterator edge_end() const {
     return EdgeIterator(this, i2u_edges_.size()); // edges.size();
-
   }
 
  private:
@@ -806,15 +832,12 @@ class Graph {
   // * @nodes_ is a list with the position of node @i in index i
   //std::vector<Point> nodes;
   std::vector<nodeinfo> nodes_; // std::vector<std::pair<Point,V>> nodes_; // indexed by node uid
-  // * @i2u_nodes_ is a list such that udx_ = i2u_nodes_[idx_]
-  std::vector<size_type> i2u_nodes_; // indexed by node idx
 
 
   // * @edges_ is a list containing pairs of nodes for each edge.
   //   The pair stored in position i corresponds to edge i.
   std::vector<edgeinfo> edges_; //std::vector<std::pair<size_type, size_type>> edges_;
-  // * @i2u_nodes_ is a list such that udx_ = i2u_edges[idx_]
-  std::vector<size_type> i2u_edges_; // indexed by edge idx
+  
   // * @a edge_values_ is a list containing the values the correspond to ith edge
   //std::vector<E> edge_values_;
   
@@ -823,10 +846,12 @@ class Graph {
   //   at position i the pairs of each node adjacent to node i and the
   //   the edge id that connect node i to the adjacent node.
   std::vector<std::vector<std::pair<size_type, size_type>>> adjacency_;
-  
 
-  // * @glob2loc is a set where Key: Pair(node_uid, edge_uid), Value: is adjacent idx
-  //std::map<std::pair<size_type, size_type>> u2i_adj;  
+  
+  // * @i2u_nodes_ is a list such that udx_ = i2u_nodes_[idx_]
+  std::vector<size_type> i2u_nodes_; // indexed by node idx 
+  // * @i2u_nodes_ is a list such that udx_ = i2u_edges[idx_]
+  std::vector<size_type> i2u_edges_; // indexed by edge idx
 };
 
 #endif // CME212_GRAPH_HPP
