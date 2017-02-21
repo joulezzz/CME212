@@ -683,11 +683,11 @@ class Graph {
      * @pre 0 <= @a edge_index < degree()
      * @post IncidentIterator belongs to @a graph and the Node in global order @a node_index and points to the Edge in a local order @a edge_index
      */
-    IncidentIterator(Graph* graph, size_type node_idx, size_type edge_idx) : graph_(graph), { //node_uid_(node_uid), edge_uid_(edge_uid) {
+    IncidentIterator(Graph* graph, size_type node_idx, size_type edge_idx) : graph_(graph) { //node_uid_(node_uid), edge_uid_(edge_uid) {
       // first get the node's uid, from i2u
       size_type node_uid_ = graph_->i2u_nodes_[node_idx];
       // now if edge idx is within correct bounds
-      if (edge_idx) < graph_->i2u_adjacency_[node_uid_].size(){
+      if (edge_idx < graph_->i2u_adjacency_[node_uid_].size() ){
         // set equal the actual local location of the edge
         edge_uid_ = graph_->i2u_adjacency_[node_idx][edge_idx];
       }
@@ -704,7 +704,7 @@ class Graph {
      * @return The Edge that the this points to
      */
     Edge operator*() const {
-      return Edge(graph_, graph_->adjacency_[node_uid_][edge_uid_].edge_uid_, node_uid_, graph_->adjacency_[node_uid_][edge_uid_].node_uid_);
+      return Edge(graph_, graph_->adjacency_[node_uid_][edge_uid_].edge_uid_, node_uid_, graph_->adjacency_[node_uid_][edge_uid_].node_uid_ );
     }
 
     /** 
