@@ -8,7 +8,6 @@
 #include <algorithm>
 #include <cassert>
 #include <vector>
-#include <map>
 
 #include "CME212/Util.hpp"
 #include "CME212/Point.hpp"
@@ -80,13 +79,17 @@ class Graph {
   //
 
   /** Construct an empty graph. */
-  Graph() : nodes_(),edges_(),adjacency_(){
+  Graph() : nodes(),edges(),adjacency(){
   }
 
   /** Default destructor */
   ~Graph() = default;
 
-
+  //size_type remove_node(const Node& );
+  //node_iterator remove-node(node_iterator n_it);
+  //size_type remove_edge(const Node&, const Node&);
+  //size_type remove_edge(const Edge&);
+  //edge_iterator remove_edge(edge_iterator e_it);
   
 
 
@@ -121,18 +124,17 @@ class Graph {
 
     /** Return this node's position. */
     const Point& position() const {
-      return graph_->nodes_[uid_].p_;
+      return graph_->nodes[uid_].first;
     }
 
     /** Modifiable version of position*/
     Point& position() {
-      return graph_->nodes_[uid_].p_;
+      return graph_->nodes[uid_].first;
     }
 
     /** Return this node's index, a number in the range [0, graph_size). */
     size_type index() const {
-      //return idx_; // 
-      return graph_->nodes_[uid_].idx_; // uid_; // changed
+      return uid_;
     }
 
     // HW1: YOUR CODE HERE
@@ -142,22 +144,22 @@ class Graph {
      * @return The value of this node which is node_value_type
      */
     node_value_type & value (){
-      return graph_->nodes_[uid_].v_;
+      return graph_->nodes[uid_].second;
     }
     
        /**
      * @return The value of this node which is const node_value_type
      */
     const node_value_type & value () const {
-      return graph_->nodes_[uid_].v_;
+      return graph_->nodes[uid_].second;
     }
 
        /**
      * @return The number of nodes adjacent to this node
      */
     size_type degree() const {
-      //return graph_->adjacency_[uid_].size();
-      return graph_->i2u_adjacency_[graph_->nodes_[uid_].idx_].size();
+      return graph_->adjacency[uid_].size();
+
     }
 
     /**
@@ -166,7 +168,8 @@ class Graph {
      *         to this node
      */
     IncidentIterator edge_begin() const {
-      return IncidentIterator(graph_, graph_->nodes_[uid_].idx_, 0); // used to be uid_
+      return IncidentIterator(graph_, uid_, 0);
+
     }
 
     /**
@@ -174,7 +177,7 @@ class Graph {
      * indicating that all adjacent edges have been iterated through
      */
     IncidentIterator edge_end() const {
-      return IncidentIterator(graph_, graph_->nodes_[uid_].idx_, degree()); // used to be uid_
+      return IncidentIterator(graph_, uid_, degree());
     }
 
     /** Test whether this node and @a n are equal.
@@ -212,7 +215,7 @@ class Graph {
     // Allow Graph to access Node's private member data and functions.
     friend class Graph;
     Graph* graph_;
-    size_type uid_; // refers to the local number of the edge (so like the 5th incident edge)
+    size_type uid_;
     Node(const Graph* graph_pointer, size_type uid)
         : graph_( const_cast<Graph*>(graph_pointer) ), uid_( uid ) {
     }
@@ -221,112 +224,12 @@ class Graph {
     // i.e. Graph needs a way to construct valid Node objects
   };
 
-
-
-
-
-
-
-
-  // returns the number of nodes removed (aka 0 or 1)
-  size_type remove_node(const Node& n){
-    size_type node_idx = n.index();
-    for (unsigned int i = 0; i < i2u_adjacency_[n.uid_].size(); i++){
-      
-      // get adj node and incident edge ids
-      size_type node_uid = adjacency_[n.uid_][i].node_uid_;
-      size_type edge_uid = adjacency_[n.uid_][i].edge_uid_;
-      size_type edge_idx = adjacency_[n.uid_][i].idx_; // local order
-      
-      // invalidate this node from adjacent node's information
-      i2u_adjacency_[node(node_uid).index()][edge_idx] = i2u_adjacency_[node(node_uid).index()].back();
-      i2u_adjacency_[node(node_uid).index()].pop_back();
-      // invalidate incident edges
-      i2u_edges_[edges_[edge_uid].idx] = i2u_edges_.back();
-      i2u_edges_.pop_back();
-      
-      //swap idx adjacency
-      size_type temp = adjacency_[n.uid_].back().idx_;
-      adjacency_[n.uid_].back().idx_ = adjacency_[n.uid_][i].idx_;
-      adjacency_[n.uid_][i].idx_ = temp;
-      //swap idx for edges
-      temp = edges_.back().idx_;
-      edges_.back().idx = edges_[edge_uid].idx_;
-      edges_[edge_uid].idx_ = temp;
-    }
-    //invalidate the row of this node
-    i2u_adjacency_[node_idx] = i2u_adjacency_.back();
-    i2u_adjacency_.pop_back();
-
-    //now invalidate the node itself
-    i2u_nodes_[node_idx] = i2u_nodes_.back();
-    i2u_nodes_.pop_back();
-
-    //swap idx 
-    size_type temp = nodes_.back().idx_;
-    nodes_.back().idx_ = node_idx;
-    nodes_[n.uid_].idx_ = temp;
-
-    return 1;
-	}
-
-/**
-  // returns node iterator that points to the next node
-  node_iterator remove_node(node_iterator it){
-    size_type num_nodes_removed = remove_node(*it);
-    if (num_nodes_removed == 1){
-      ++it;
-      return it;
-    }
-    return it; // CHECK THIS WITH TA
-  }
-
-  // returns the numbers of edges removed (aka 0 or 1)
-  size_type remove_edge(const Node& a, const Node& b){
-    if ( a.valide() && b.valid() ) {
-      for (unsigned int j = 0; j < adjacency_[a.uid_].size(); i++){
-        if (b.uid_ == adjacency_[a.uid_][i].node_uid_){
-          size_type edge_uid = adjacency_[a.uid_][i].edge_uid_;
-          auto it = EdgeIterator(this, edge_uid);
-          e = *it;
-          if (e.valid()){
-            i2u_edges_[edges_e.uid_].idx] = i2u_edges_.back();
-            i2u_edges_.pop_back();
-            return 1;
-          }
-        }
-      }
-    }
-    return 0;
-  }
-
-  // returns the number of edges removed (aka 0 or 1)
-  size_type remove_edge(const Edge& e){
-    size_type num_edges_removed = remove_edge(e.node1(), e.node2());
-    return num_edges_removed;
-  }
-
-  // returns edge iterator that points to the next node
-  edge_iterator remove_edge(edge_iterator it){
-    size_type num_edges_removed = remove_edge(*it){
-    if (num_edges_removed == 1){
-      ++it;
-      return it;
-    }
-    return it; // CHECK THIS WITH TA
-  }
-
-*/
-
-
-
-
   /** Return the number of nodes in the graph.
    *
    * Complexity: O(1).
    */
   size_type size() const {
-    return i2u_nodes_.size(); //nodes_.size(); // recall nodes is a vector, size is its method
+    return nodes.size(); // recall nodes is a vector, size is its method
   }
 
   /** Synonym for size(). */
@@ -344,14 +247,9 @@ class Graph {
    */
   Node add_node(const Point& position, const node_value_type& new_value = node_value_type()) {
     //nodes.push_back(position);
-    size_type idx = nodes_.size();
-    //nodes_.push_back(std::make_pair(position, new_value));
-    nodes_.push_back({position, new_value, idx});
-    //adjacency_.push_back(std::vector<std::pair<size_type, size_type>> ()); 
-    adjacency_.push_back(std::vector<adjacencyinfo> {});
-    // i2u info
-    i2u_nodes_.push_back(idx);
-    return Node(this,nodes_.size()-1); 
+    nodes.push_back(std::make_pair(position, new_value));
+    adjacency.push_back(std::vector<std::pair<size_type, size_type>> ()); 
+    return Node(this,nodes.size()-1); 
   }
 
   /** Determine if a Node belongs to this Graph
@@ -361,7 +259,7 @@ class Graph {
    */
   bool has_node(const Node& n) const {
     if (n.graph_ == this)
-      if ( nodes_[n.uid_].idx_ < i2u_nodes_.size() ) // 
+      if (n.uid_<nodes.size())
         return true;
     return false;
   }
@@ -373,7 +271,7 @@ class Graph {
    * Complexity: O(1).
    */
   Node node(size_type i) const {
-    return Node(this, i2u_nodes_[i]); 
+    return Node(this, i);
   }
 
   //
@@ -392,31 +290,24 @@ class Graph {
     Edge() {
     }
 
-    /** Return this edges's index, a number in the range [0, graph_size). */
-    /**
-    size_type index() const {
-      return uid_; // changed
-    }
-    */
-
     /**
      * @return The value of this node which is node_value_type
      */
     edge_value_type & value(){
-      return graph_->edges_[uid_].v_;
+      return graph_->edge_values[uid_];
     }
     const edge_value_type & value() const{
-      return graph_->edges_[uid_].v_;
+      return graph_->edge_values[uid_];
     }
 
     /** Return a node of this Edge */
     Node node1() const {
-      return Node(graph_,node1_uid_);
+      return Node(graph_,node1_id);
     }
 
     /** Return the other node of this Edge */
     Node node2() const {
-      return Node(graph_,node2_uid_);
+      return Node(graph_,node2_id);
     }
 
     /** Test whether this edge and @a e are equal.
@@ -425,8 +316,8 @@ class Graph {
      */
     bool operator==(const Edge& e) const {
       if (graph_ == e.graph_){
-        if ((node1_uid_ == e.node1_uid_ and node2_uid_ == e.node2_uid_) or 
-             (node1_uid_ == e.node2_uid_ and node2_uid_ == e.node1_uid_)){
+        if ((node1_id == e.node1_id and node2_id == e.node2_id) or 
+             (node1_id == e.node2_id and node2_id == e.node1_id)){
           return true;
         }
       }
@@ -460,10 +351,10 @@ class Graph {
     friend class Graph;
     Graph* graph_;
     size_type uid_;
-    size_type node1_uid_;
-    size_type node2_uid_;
+    size_type node1_id;
+    size_type node2_id;
     Edge(const Graph* graph_pointer, size_type uid, size_type node1, size_type node2)
-        : graph_(const_cast<Graph*>(graph_pointer)), uid_(uid), node1_uid_(node1), node2_uid_(node2){
+        : graph_(const_cast<Graph*>(graph_pointer)), uid_(uid), node1_id(node1), node2_id(node2){
     }
     // Use this space to declare private data members and methods for Edge
     // that will not be visible to users, but may be useful within Graph.
@@ -475,7 +366,7 @@ class Graph {
    * Complexity: No more than O(num_nodes() + num_edges()), hopefully less
    */
   size_type num_edges() const {
-    return i2u_edges_.size(); //edges_.size();
+    return edges.size();
   }
 
   /** Return the edge with index @a i.
@@ -483,9 +374,8 @@ class Graph {
    *
    * Complexity: No more than O(num_nodes() + num_edges()), hopefully less
    */
-  Edge edge(size_type idx) const {
-    size_type uid = i2u_edges_[idx]; 
-    return Edge(this, uid, edges_[uid].node1_uid_, edges_[uid].node2_uid_);
+  Edge edge(size_type i) const {
+    return Edge(this, i, edges[i].first, edges[i].second);
   }
 
   /** Test whether two nodes are connected by an edge.
@@ -495,8 +385,8 @@ class Graph {
    * Complexity: No more than O(num_nodes() + num_edges()), hopefully less
    */
   bool has_edge(const Node& a, const Node& b) const {
-    for (unsigned int i=0; i<adjacency_[a.uid_].size(); i++)
-       if (b.uid_ == adjacency_[a.uid_][i].node_uid_)
+    for (unsigned int i=0; i<adjacency[a.uid_].size(); i++)
+       if (b.uid_ == adjacency[a.uid_][i].first)
          return true;
     return false;
   }
@@ -514,44 +404,20 @@ class Graph {
    * Complexity: No more than O(num_nodes() + num_edges()), hopefully less
    */
   Edge add_edge(const Node& a, const Node& b, const edge_value_type& new_value = edge_value_type() ) {
-std::cout << a.uid_ << std::endl;
-std::cout << adjacency_[a.uid_].size() << std::endl;
-
-    for (unsigned int i=0; i<adjacency_[a.uid_].size(); i++){
-	std::cout << "Graph" << std::endl;
-       if (b.uid_ == adjacency_[a.uid_][i].node_uid_)
-         return Edge(this, adjacency_[a.uid_][i].edge_uid_, a.uid_, b.uid_);
-    }
+    for (unsigned int i=0; i<adjacency[a.uid_].size(); i++)
+       if (b.uid_ == adjacency[a.uid_][i].first)
+         return Edge(this, adjacency[a.uid_][i].second, a.uid_, b.uid_);
     if (a<b){
-      size_type idx = edges_.size();
-      edges_.push_back({a.uid_, b.uid_, new_value, idx});
-      i2u_edges_.push_back(idx);
-      //edges_.push_back(std::make_pair(a.uid_,b.uid_));
-      //edge_values_.push_back(new_value);
-
+      edges.push_back(std::make_pair(a.uid_,b.uid_));
+      edge_values.push_back(new_value);
     }
     else{
-      size_type idx = edges_.size();
-      edges_.push_back({b.uid_, a.uid_, new_value, idx});
-      //i2u info
-      i2u_edges_.push_back(idx);
-      //edges_.push_back(std::make_pair(b.uid_,a.uid_));
-      //edge_values_.push_back(new_value);
+      edges.push_back(std::make_pair(b.uid_,a.uid_));
+      edge_values.push_back(new_value);
     }
-
-    size_type idx = adjacency_[a.uid_].size();
-    size_type size_of_edges = (size_type) edges_.size()-1;
-    adjacency_[a.uid_].push_back({b.uid_, size_of_edges, idx});
-    i2u_adjacency_[i2u_nodes_[a.uid_]].push_back(idx);
-    
-    idx = adjacency_[b.uid_].size();
-    adjacency_[b.uid_].push_back({a.uid_, size_of_edges, idx});
-    i2u_adjacency_[i2u_nodes_[b.uid_]].push_back(idx);
-    
-    //adjacency_[a.uid_].push_back(std::make_pair(b.uid_,edges_.size()-1));
-    //adjacency_[b.uid_].push_back(std::make_pair(a.uid_,edges_.size()-1));
-    
-    return Edge(this,edges_.size()-1,a.uid_,b.uid_);
+    adjacency[a.uid_].push_back(std::make_pair(b.uid_,edges.size()-1));
+    adjacency[b.uid_].push_back(std::make_pair(a.uid_,edges.size()-1));
+    return Edge(this,edges.size()-1,a.uid_,b.uid_);
   }
 
   /** Remove all nodes and edges from this graph.
@@ -560,9 +426,9 @@ std::cout << adjacency_[a.uid_].size() << std::endl;
    * Invalidates all outstanding Node and Edge objects.
    */
   void clear() {
-    nodes_.clear();
-    edges_.clear();
-    adjacency_.clear();
+    nodes.clear();
+    edges.clear();
+    adjacency.clear();
   }
 
   //
@@ -587,20 +453,11 @@ std::cout << adjacency_[a.uid_].size() << std::endl;
 
     /** Constructor for a NodeIterator
      * @param[in] g The an object of type Graph
-     * @param[in] idx The value of of type size_type
-     * @return NodeIterator that belongs to @a g and points to the @a uid'th Node in a global order 
-     * @pre 0 <= @a idx <= num_nodes()
+     * @param[in] i The value of of type size_type
+     * @return NodeIterator that belongs to @a g and points to the @a i'th Node in a global order 
+     * @pre 0 <= @a i < num_nodes()
      */
-    NodeIterator(const Graph* g, size_type idx): graph_(g) { // uid_(uid) {
-      //if given a nodes number that user thinks node is at
-      if ( idx < graph_->i2u_nodes_.size() ) {
-        // point to actual node index
-        uid_ = graph_->i2u_nodes_[idx]; // replaced uid
-      }
-      else {
-        // if given the end of the list, then
-        uid_ = graph_->nodes_.size(); // the actual end of the list
-      }
+    NodeIterator(const Graph* g, size_type i): graph_(g), index_points(i) {
     }
 
     // HW1 #2: YOUR CODE HERE
@@ -610,17 +467,16 @@ std::cout << adjacency_[a.uid_].size() << std::endl;
      * @return The Node object that this NodeIterator points to
      */
     Node operator*() const {
-        return Node(graph_ , uid_);
+        return Node(graph_ , index_points);
     }
 
     /** Increments the NodeIterator to point to the next Node or nullptr
      * @return NodeIterator that points to exactly one of the following:
-     *                1.) next Node object in the global order    if the global index this points to < nodes_.size()
-     *                2.) nullptr                                 if the global index this points to = nodes_.size(),  
+     *                1.) next Node object in the global order    if the global index this points to < nodes.size()
+     *                2.) nullptr                                 if the global index this points to = nodes.size(),  
      */
     NodeIterator& operator++(){
-      uid_ = graph_->i2u_nodes_[ ( graph_->nodes_[uid_].idx_ + 1 ) ];
-      //uid_++;
+      index_points++;
       return  *this;
 
     }
@@ -632,14 +488,14 @@ std::cout << adjacency_[a.uid_].size() << std::endl;
      *         2. the global order of the Node this points to is the same as the global order of the Node @a nodeIterator points to  
      */
     bool operator==(const NodeIterator& nodeIterator) const {
-      return ( nodeIterator.graph_ == graph_) && (nodeIterator.uid_ == uid_);
+      return ( nodeIterator.graph_ == graph_) && (nodeIterator.index_points == index_points);
     }
 
    private:
     friend class Graph;
     // HW1 #2: YOUR CODE HERE
     const Graph *graph_;
-    size_type uid_;
+    size_type index_points;
   };
 
   // HW1 #2: YOUR CODE HERE
@@ -650,7 +506,6 @@ std::cout << adjacency_[a.uid_].size() << std::endl;
               otherwise returns a nullptr
   */
   NodeIterator node_begin() const {
-
       return NodeIterator(this, 0);
   }
 
@@ -658,7 +513,7 @@ std::cout << adjacency_[a.uid_].size() << std::endl;
   * @return NodeIterator that is the nullptr 
   */
   NodeIterator node_end() const {
-    return NodeIterator( this, i2u_nodes_.size() ); // nodes_.size());
+    return NodeIterator(this, nodes.size());
   }
 
   //
@@ -689,18 +544,7 @@ std::cout << adjacency_[a.uid_].size() << std::endl;
      * @pre 0 <= @a edge_index < degree()
      * @post IncidentIterator belongs to @a graph and the Node in global order @a node_index and points to the Edge in a local order @a edge_index
      */
-    IncidentIterator(Graph* graph, size_type node_idx, size_type edge_idx) : graph_(graph) { //node_uid_(node_uid), edge_uid_(edge_uid) {
-      // first get the node's uid, from i2u
-      size_type node_uid_ = graph_->i2u_nodes_[node_idx];
-      // now if edge idx is within correct bounds
-      if (edge_idx < graph_->i2u_adjacency_[node_uid_].size() ){
-        // set equal the actual local location of the edge
-        edge_uid_ = graph_->i2u_adjacency_[node_idx][edge_idx];
-      }
-      else {
-        // there are no more local edges, set to null
-        edge_uid_ = graph_->adjacency_[node_uid_].size();
-      }
+    IncidentIterator(Graph* graph, size_type node_index, size_type edge_index) : graph_(graph), node_index_(node_index), edge_index_(edge_index) {
     }
 
     // HW1 #3: YOUR CODE HERE
@@ -710,7 +554,7 @@ std::cout << adjacency_[a.uid_].size() << std::endl;
      * @return The Edge that the this points to
      */
     Edge operator*() const {
-      return Edge(graph_, graph_->adjacency_[node_uid_][edge_uid_].edge_uid_, node_uid_, graph_->adjacency_[node_uid_][edge_uid_].node_uid_ );
+      return Edge(graph_, graph_->adjacency[node_index_][edge_index_].second, node_index_, graph_->adjacency[node_index_][edge_index_].first);
     }
 
     /** 
@@ -720,10 +564,7 @@ std::cout << adjacency_[a.uid_].size() << std::endl;
      *                2. nullptr if its local position order = degree()
      */
     IncidentIterator& operator++() {
-      //edge_uid_++;
-      size_type edge_idx = graph_->adjacency_[node_uid_][edge_uid_].idx;
-      size_type node_idx = graph_->nodes_[node_uid_].idx_;
-      edge_uid_ = graph_->i2u_adjacency_[node_idx][edge_idx + 1];
+      edge_index_++;
       return *this;
     }
 
@@ -736,14 +577,14 @@ std::cout << adjacency_[a.uid_].size() << std::endl;
      *         3. if incidentIterator and this have the same edge value in a local order
      */
     bool operator==(const IncidentIterator& incidentIterator) const {
-      return ( incidentIterator.graph_ == graph_) && (incidentIterator.node_uid_ == node_uid_) && (incidentIterator.edge_uid_ == edge_uid_);
+      return ( incidentIterator.graph_ == graph_) && (incidentIterator.node_index_ == node_index_) && (incidentIterator.edge_index_ == edge_index_);
     }
 
    private:
     friend class Graph;
     const Graph *graph_;
-    size_type node_uid_; //global order
-    size_type edge_uid_; //local order 
+    size_type node_index_;
+    size_type edge_index_; 
 
 
     // HW1 #3: YOUR CODE HERE
@@ -773,18 +614,9 @@ std::cout << adjacency_[a.uid_].size() << std::endl;
      * @param[in] graph An object of Graph
      * @param[in] edge_index A value of size_type
      * @return EdgeIterator that belongs to @a graph and points to the Edge that has @a edge_index in global order
-     * @pre 0 <= @a idx < num_edges()
+     * @pre 0 <= @a edge_index < num_edges()
      */
-    EdgeIterator(const Graph* graph, size_type idx) : graph_(graph) { // uid_(uid) {
-      //if given a nodes number that user thinks node is at
-      if ( idx < graph_->i2u_edges_.size() ) {
-        // point to actual node index
-        uid_ = graph_->i2u_nodes_[idx]; // replaced uid
-      }
-      else {
-        // if given the end of the list, then
-        uid_ = graph_->nodes_.size(); // the actual end of the list
-      }
+    EdgeIterator(const Graph* graph, size_type edge_index) : graph_(graph), edge_index_(edge_index) {
     }
 
     // HW1 #5: YOUR CODE HERE
@@ -794,7 +626,7 @@ std::cout << adjacency_[a.uid_].size() << std::endl;
       * @return Edge that this points to
       */
     Edge operator*() const {
-      return Edge(graph_, uid_, graph_->edges_[uid_].node1_uid_, graph_->edges_[uid_].node2_uid_);
+      return Edge(graph_, edge_index_, graph_->edges[edge_index_].first, graph_->edges[edge_index_].second);
     }
 
      /** Increments the EdgeIterator to point to the next Edge (in a global sense) or the nullptr
@@ -803,8 +635,7 @@ std::cout << adjacency_[a.uid_].size() << std::endl;
       *                2.) if Edge global number = num_edges(), nullptr 
       */
     EdgeIterator& operator++() {
-      uid_ = graph_->i2u_nodes_[ ( graph_->edges_[uid_].idx_ + 1 ) ];
-      //uid_++;
+      edge_index_++;
       return *this;
     }
 
@@ -817,7 +648,7 @@ std::cout << adjacency_[a.uid_].size() << std::endl;
       */
     bool operator==(const EdgeIterator& edge_iterator) const {
       if (edge_iterator.graph_ == graph_){
-        return (edge_iterator.uid_ == uid_);
+        return (edge_iterator.edge_index_ == edge_index_);
       }
       return false;
     }
@@ -827,7 +658,7 @@ std::cout << adjacency_[a.uid_].size() << std::endl;
     friend class Graph;
     // HW1 #5: YOUR CODE HERE
     const Graph* graph_;
-    size_type uid_;
+    size_type edge_index_;
   };
 
   // HW1 #5: YOUR CODE HERE
@@ -840,7 +671,7 @@ std::cout << adjacency_[a.uid_].size() << std::endl;
    *       otherwise it will return a nullptr
    */
   EdgeIterator edge_begin() const {
-    return EdgeIterator(this, 0); // 0
+    return EdgeIterator(this, 0);
 
   }
 
@@ -849,61 +680,26 @@ std::cout << adjacency_[a.uid_].size() << std::endl;
    * @post EdgeIterator is assigned nullptr only if all edges have been exhausted in a global order
    */
   EdgeIterator edge_end() const {
-    return EdgeIterator(this, i2u_edges_.size()); // edges.size();
+    return EdgeIterator(this, edges.size());
+
   }
 
  private:
 
   // Use this space for your Graph class's internals:
   //   helper functions, data members, and so forth.
-  
-  
-  struct nodeinfo{
-    Point p_; // position
-    V v_; // value
-    size_type idx_;
-  };
-
-  struct edgeinfo{
-    size_type node1_uid_;
-    size_type node2_uid_;
-    E v_; // value
-    size_type idx_;
-  };
-
-  struct adjacencyinfo{
-    size_type node_uid_;
-    size_type edge_uid_;
-    size_type idx;
-  };
-  
-
-  // * @nodes_ is a list with the position of node @i in index i
+  // * @nodes is a list with the position of node @i in index i
   //std::vector<Point> nodes;
-  std::vector<nodeinfo> nodes_; // std::vector<std::pair<Point,V>> nodes_; // indexed by node uid
-
-
-  // * @edges_ is a list containing pairs of nodes for each edge.
+  std::vector<std::pair<Point,V>> nodes;
+  // * @edges is a list containing pairs of nodes for each edge.
   //   The pair stored in position i corresponds to edge i.
-  std::vector<edgeinfo> edges_; //std::vector<std::pair<size_type, size_type>> edges_;
-  
-  // * @a edge_values_ is a list containing the values the correspond to ith edge
-  //std::vector<E> edge_values_;
-  
-
+  std::vector<std::pair<size_type, size_type>> edges;
+  // * @a edge_values is a list containing the values the correspond to ith edge
+  std::vector<E> edge_values;
   // * @adjacency is a vector containing vector with pairs. It contains
   //   at position i the pairs of each node adjacent to node i and the
   //   the edge id that connect node i to the adjacent node.
-  std::vector<std::vector<adjacencyinfo>> adjacency_; // std::vector<std::vector<std::pair<size_type, size_type>>> adjacency_;
-
-  
-  // * @i2u_nodes_ is a list such that udx_ = i2u_nodes_[idx_]
-  std::vector<size_type> i2u_nodes_; // indexed by node idx 
-  // * @i2u_edges_ is a list such that udx_ = i2u_edges[idx_]
-  std::vector<size_type> i2u_edges_; // indexed by edge idx
-  // * @i2u_adjacency_ is a list such that udx_ = i2u_edges[idx_]
-  std::vector<std::vector<size_type>> i2u_adjacency_; // indexed by edge idx
-
+  std::vector<std::vector<std::pair<size_type, size_type>>> adjacency;
 };
 
 #endif // CME212_GRAPH_HPP
