@@ -888,7 +888,7 @@ class Graph {
   // * @adjacency is a vector containing vector with pairs. It contains
   //   at position i the pairs of each node adjacent to node i and the
   //   the edge id that connect node i to the adjacent node.
-  std::vector<std::vector<adjacencyinfo> adjacency_; // std::vector<std::vector<std::pair<size_type, size_type>>> adjacency_;
+  std::vector<std::vector<adjacencyinfo>> adjacency_; // std::vector<std::vector<std::pair<size_type, size_type>>> adjacency_;
 
   
   // * @i2u_nodes_ is a list such that udx_ = i2u_nodes_[idx_]
