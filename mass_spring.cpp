@@ -250,10 +250,10 @@ int main(int argc, char** argv)
     std::cerr << "Usage: " << argv[0] << " NODES_FILE TETS_FILE\n";
     exit(1);
   }
-
+  
   // Construct an empty graph
   GraphType graph;
-
+std::cout << "here1" <<std::endl;
   // Create a nodes_file from the first input argument
   std::ifstream nodes_file(argv[1]);
   // Interpret each line of the nodes_file as a 3D Point and add to the Graph
@@ -261,12 +261,14 @@ int main(int argc, char** argv)
   std::vector<typename GraphType::node_type> nodes;
   while (CME212::getline_parsed(nodes_file, p))
     nodes.push_back(graph.add_node(p));
-
+std::cout << "her2" <<std::endl;
   // Create a tets_file from the second input argument
   std::ifstream tets_file(argv[2]);
   // Interpret each line of the tets_file as four ints which refer to nodes
   std::array<int,4> t;
+std::cout << "her3" <<std::endl;
   while (CME212::getline_parsed(tets_file, t)) {
+	std::cout<< "how many times" <<std::endl;
     graph.add_edge(nodes[t[0]], nodes[t[1]]);
     graph.add_edge(nodes[t[0]], nodes[t[2]]);
 //#if 0
@@ -277,7 +279,7 @@ int main(int argc, char** argv)
     graph.add_edge(nodes[t[1]], nodes[t[3]]);
     graph.add_edge(nodes[t[2]], nodes[t[3]]);
   }
-
+std::cout << "her4" <<std::endl;
   // HW2 #1 YOUR CODE HERE
   // Set initial conditions for your nodes, if necessary.
   for (auto it = graph.node_begin(); it != graph.node_end(); ++it) {

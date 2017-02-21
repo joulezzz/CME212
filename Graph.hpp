@@ -514,9 +514,14 @@ class Graph {
    * Complexity: No more than O(num_nodes() + num_edges()), hopefully less
    */
   Edge add_edge(const Node& a, const Node& b, const edge_value_type& new_value = edge_value_type() ) {
-    for (unsigned int i=0; i<adjacency_[a.uid_].size(); i++)
+std::cout << a.uid_ << std::endl;
+std::cout << adjacency_[a.uid_].size() << std::endl;
+
+    for (unsigned int i=0; i<adjacency_[a.uid_].size(); i++){
+	std::cout << "Graph" << std::endl;
        if (b.uid_ == adjacency_[a.uid_][i].node_uid_)
          return Edge(this, adjacency_[a.uid_][i].edge_uid_, a.uid_, b.uid_);
+    }
     if (a<b){
       size_type idx = edges_.size();
       edges_.push_back({a.uid_, b.uid_, new_value, idx});
