@@ -93,7 +93,6 @@ class Graph {
     * @post new num_nodes = old num_nodes - 1
     */
   size_type remove_node(const Node& n){
-    //std::cout << "here" << std::endl;
     size_type uid_back_node = adjacency.size()-1;
     for (size_type i = 0; i < adjacency[n.uid_].size(); i++) {
       size_type uid2_node = adjacency[n.uid_][i].first;
@@ -116,8 +115,6 @@ class Graph {
         }
       }
     }
-    //Node last_node = node(nodes.size()-1);
-    //last_node.uid_ = n.uid_;
     nodes[n.uid_] = nodes.back();
     nodes.pop_back(); 
     return 1;
@@ -146,7 +143,6 @@ class Graph {
    */
   size_type remove_edge (const Node& n1, const Node& n2){
        for (size_type j=0; j<adjacency[n1.uid_].size(); j++) {
-           //if (adjacency[n1.uid_][j].first == adjacency[n2.uid_])
            if (adjacency[n1.uid_][j].first == n2.uid_)
            {
                adjacency[n1.uid_][j] = adjacency[n1.uid_].back();
@@ -154,7 +150,6 @@ class Graph {
            }
        }
        for (size_type j=0; j<adjacency[n2.uid_].size(); j++) {
-           //if (adjacency[n2.uid_][j].first == adjacency[n1.uid_])
            if (adjacency[n2.uid_][j].first == n1.uid_)
            {
                adjacency[n2.uid_][j] = adjacency[n2.uid_].back();
