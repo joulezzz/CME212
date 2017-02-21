@@ -145,20 +145,20 @@ class Graph {
    * @post edge with {n1,n2} or {n2,n1} does not exist is the list of edges in the graph
    */
   size_type remove_edge (const Node& n1, const Node& n2){
-       for (size_type j=0; j<adjList[n1.uid_].size(); j++) {
-           //if (adjacency[n1.uid_][j].first == adjList[n2.uid_])
-           if (adjList[n1.uid_][j].first == n2.uid_)
+       for (size_type j=0; j<adjacency[n1.uid_].size(); j++) {
+           //if (adjacency[n1.uid_][j].first == adjacency[n2.uid_])
+           if (adjacency[n1.uid_][j].first == n2.uid_)
            {
-               adjList[n1.uid_][j] = adjList[n1.uid_].back();
-               adjList[n1.uid_].pop_back();
+               adjacency[n1.uid_][j] = adjacency[n1.uid_].back();
+               adjacency[n1.uid_].pop_back();
            }
        }
-       for (size_type j=0; j<adjList[n2.uid_].size(); j++) {
-           //if (adjList[n2.uid_][j].first == adjList[n1.uid_])
-           if (adjList[n2.uid_][j].first == n1.uid_)
+       for (size_type j=0; j<adjacency[n2.uid_].size(); j++) {
+           //if (adjacency[n2.uid_][j].first == adjacency[n1.uid_])
+           if (adjacency[n2.uid_][j].first == n1.uid_)
            {
-               adjList[n2.uid_][j] = adjList[n2.uid_].back();
-               adjList[n2.uid_].pop_back();
+               adjacency[n2.uid_][j] = adjacency[n2.uid_].back();
+               adjacency[n2.uid_].pop_back();
            }
        }
        for (size_type i=0; i<edges.size(); i++) {
