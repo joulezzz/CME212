@@ -62,8 +62,8 @@ using Edge = typename GraphType::edge_type;
  *           @a force must return a Point representing the force vector on
  *           Node n at time @a t.
  */
-template <typename G, typename F>
-double symp_euler_step(G& g, double t, double dt, F force) {
+template <typename G, typename F, typename C>
+double symp_euler_step(G& g, double t, double dt, F force, C constraint) {
   // Compute the t+dt position
   for (auto it = g.node_begin(); it != g.node_end(); ++it) {
     auto n = *it;
@@ -73,12 +73,15 @@ double symp_euler_step(G& g, double t, double dt, F force) {
     n.position() += n.value().vel * dt;
   }
 
+  constraint(g,t); 
+
   // Compute the t+dt velocity
   for (auto it = g.node_begin(); it != g.node_end(); ++it) {
     auto n = *it;
 
     // v^{n+1} = v^{n} + F(x^{n+1},t) * dt / m
     n.value().vel += force(n, t) * (dt / n.value().mass);
+
     if (n.position() == Point(0,0,0) || n.position() == Point(1,0,0)){
 	    n.value().vel = Point(0,0,0);
     }
@@ -175,7 +178,7 @@ CombinedForce<CombinedForce<Force1, Force2>, Force3> make_combined_force(Force1 
  return make_combined_force(make_combined_force(f1,f2), f3);
 }
 
-/**
+
 struct PlaneConstraint {
   template<typename GRAPH>
   void operator()(GRAPH graph, double t){
@@ -218,13 +221,14 @@ struct SphereConstraint2 {
       auto n = *it;
       Point diff = n.position() - sphere_center;
       if ( norm( diff ) < radius ) {
+	std::cout << "here" << std::endl;
         graph.remove_node(n);
       }
     }
   }
 };
 
-template <typename Contraint1, typename Contraint2, typename Constraint3>
+template <typename Constraint1, typename Constraint2, typename Constraint3>
 struct CombinedConstraints {
   Constraint1 c1;
   Constraint2 c2;
@@ -237,12 +241,12 @@ struct CombinedConstraints {
   }
 };
 
-template<typename Constraint1, typename Constaint2, typename Constraint3>
-CombinedForce<Constraint1, Constraint2, Constraint3> make_combined_constaints(Constraint1 c1, Constraint2 c2, Constraint c3){
+template<typename Constraint1, typename Constraint2, typename Constraint3>
+CombinedConstraints<Constraint1, Constraint2, Constraint3> make_combined_constraints(Constraint1 c1, Constraint2 c2, Constraint3 c3){
  return {c1,c2, c3};
 }
 
-*/
+
 int main(int argc, char** argv)
 {
   // Check arguments
@@ -253,7 +257,6 @@ int main(int argc, char** argv)
   
   // Construct an empty graph
   GraphType graph;
-std::cout << "here1" <<std::endl;
   // Create a nodes_file from the first input argument
   std::ifstream nodes_file(argv[1]);
   // Interpret each line of the nodes_file as a 3D Point and add to the Graph
@@ -261,14 +264,11 @@ std::cout << "here1" <<std::endl;
   std::vector<typename GraphType::node_type> nodes;
   while (CME212::getline_parsed(nodes_file, p))
     nodes.push_back(graph.add_node(p));
-std::cout << "her2" <<std::endl;
   // Create a tets_file from the second input argument
   std::ifstream tets_file(argv[2]);
   // Interpret each line of the tets_file as four ints which refer to nodes
   std::array<int,4> t;
-std::cout << "her3" <<std::endl;
   while (CME212::getline_parsed(tets_file, t)) {
-	std::cout<< "how many times" <<std::endl;
     graph.add_edge(nodes[t[0]], nodes[t[1]]);
     graph.add_edge(nodes[t[0]], nodes[t[2]]);
 //#if 0
@@ -279,7 +279,6 @@ std::cout << "her3" <<std::endl;
     graph.add_edge(nodes[t[1]], nodes[t[3]]);
     graph.add_edge(nodes[t[2]], nodes[t[3]]);
   }
-std::cout << "her4" <<std::endl;
   // HW2 #1 YOUR CODE HERE
   // Set initial conditions for your nodes, if necessary.
   for (auto it = graph.node_begin(); it != graph.node_end(); ++it) {
@@ -298,14 +297,14 @@ std::cout << "her4" <<std::endl;
   GravityForce force_gravity;
   auto total_force = make_combined_force(force_damping, force_spring, force_gravity);
 
-/**
+
   PlaneConstraint constraint1;
   SphereConstraint1 constraint2;
   SphereConstraint2 constraint3;
 
-  auto all_constraints = make_combined_constaints(constraint1, constraint2, constraint3);
+  auto all_constraints = make_combined_constraints(constraint1, constraint2, constraint3);
   
-*/
+
   // Print out the stats
   std::cout << graph.num_nodes() << " " << graph.num_edges() << std::endl;
 
@@ -330,7 +329,7 @@ std::cout << "her4" <<std::endl;
 
       for (double t = t_start; t < t_end && !interrupt_sim_thread; t += dt) {
         //std::cout << "t = " << t << std::endl;
-        symp_euler_step(graph, t, dt, total_force); // replace Problem1Force() with CombinedForce()
+        symp_euler_step(graph, t, dt, total_force, all_constraints); // replace Problem1Force() with CombinedForce()
 	
 	// clear the viewer's nodes and edges 
 	viewer.clear();
@@ -339,7 +338,8 @@ std::cout << "her4" <<std::endl;
         // Update viewer with nodes' new positions
         viewer.add_nodes(graph.node_begin(), graph.node_end(), node_map);
 	viewer.add_edges(graph.edge_begin(), graph.edge_end(), node_map);
-        viewer.set_label(t);
+        
+	viewer.set_label(t);
 
         // These lines slow down the animation for small graphs, like grid0_*.
         // Feel free to remove them or tweak the constants.
