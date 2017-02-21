@@ -178,7 +178,7 @@ CombinedForce<CombinedForce<Force1, Force2>, Force3> make_combined_force(Force1 
 // if norm( n.position() - Point(0.5, 0.5, -0.5) ) < radius // violated (here radius = 0.15)
 //	n.remove_node(); // removes node and all of its edges
 
-
+/**
 struct PlaneConstraint {
   template<typename GRAPH>
   void operator()(GRAPH graph, double t){
@@ -245,7 +245,7 @@ CombinedForce<Constraint1, Constraint2, Constraint3> make_combined_constaints(Co
  return {c1,c2, c3};
 }
 
-
+*/
 int main(int argc, char** argv)
 {
   // Check arguments
@@ -299,13 +299,14 @@ int main(int argc, char** argv)
   GravityForce force_gravity;
   auto total_force = make_combined_force(force_damping, force_spring, force_gravity);
 
+/**
   PlaneConstraint constraint1;
   SphereConstraint1 constraint2;
   SphereConstraint2 constraint3;
 
   auto all_constraints = make_combined_constaints(constraint1, constraint2, constraint3);
   
-
+*/
   // Print out the stats
   std::cout << graph.num_nodes() << " " << graph.num_edges() << std::endl;
 
