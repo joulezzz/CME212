@@ -180,9 +180,10 @@ CombinedForce<CombinedForce<Force1, Force2>, Force3> make_combined_force(Force1 
 
 
 struct PlaneConstraint {
-  template<typename GRAPH>
-  void operator()(GRAPH graph, double t){
+  //template<typename GRAPH>
+  void operator()(GraphType& graph, double t){
 	(void) t;
+	std::cout << "plane constraint" << std::endl;
   	for (auto it = graph.node_begin(); it != graph.node_end(); ++it){
 		auto n = *it;
 		if (dot(n.position(), Point(0,0,1)) < -0.75){
@@ -194,9 +195,10 @@ struct PlaneConstraint {
 };
 
 struct SphereConstraint1 {
-  template<typename GRAPH>
-  void operator()(GRAPH graph, double t){
+  //template<typename GRAPH>
+  void operator()(GraphType& graph, double t){
 	(void) t;
+	std::cout << "sphere constraint 1" << std::endl;
 	double radius = 0.15;
 	Point sphere_center = Point(0.5,0.5,-0.5);
 	for (auto it = graph.node_begin(); it != graph.node_end(); ++it){
@@ -212,16 +214,16 @@ struct SphereConstraint1 {
 };
 
 struct SphereConstraint2 {
-  template<typename GRAPH>
-  void operator()(GRAPH graph, double t){
+  //template<typename GRAPH>
+  void operator()(GraphType& graph, double t){
     (void) t;
+    std::cout << "sphere constraint 2" << std::endl;
     double radius = 0.15;
     Point sphere_center = Point(0.5,0.5,-0.5);
     for (auto it = graph.node_begin(); it != graph.node_end(); ++it){
       auto n = *it;
       Point diff = n.position() - sphere_center;
       if ( norm( diff ) < radius ) {
-	std::cout << "here" << std::endl;
         graph.remove_node(n);
       }
     }
@@ -302,7 +304,7 @@ int main(int argc, char** argv)
   SphereConstraint1 constraint2;
   SphereConstraint2 constraint3;
 
-  auto all_constraints = make_combined_constraints(constraint1, constraint2, constraint3);
+  auto all_constraints = make_combined_constraints(constraint1, constraint3, constraint2);
   
 
   // Print out the stats

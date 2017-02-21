@@ -85,7 +85,6 @@ class Graph {
   /** Default destructor */
   ~Graph() = default;
 
-  //size_type remove_node(const Node& );
   /** Removes the node object from the graph object 
     * @return return 1 
     * @pre 0 <= @a n.index() < old num_nodes()
@@ -93,7 +92,8 @@ class Graph {
     * @post return value of size_type is 1 indicating the node removal was a success
     * @post new num_nodes = old num_nodes - 1
     */
-  size_type remove_node (const Node n){
+  size_type remove_node(const Node& n){
+    //std::cout << "here" << std::endl;
     size_type uid_back_node = adjacency.size()-1;
     for (size_type i = 0; i < adjacency[n.uid_].size(); i++) {
       size_type uid2_node = adjacency[n.uid_][i].first;
@@ -107,10 +107,8 @@ class Graph {
       edges[uid2_edge] = edges.back();
       edges.pop_back();
     }
-
     adjacency[n.uid_] = adjacency.back();
     adjacency.pop_back();
-
     for (size_type i = 0; i < adjacency.size(); i++){
       for (size_type j = 0; j < adjacency[i].size(); j++){
         if (adjacency[i][j].first == uid_back_node){
@@ -118,20 +116,17 @@ class Graph {
         }
       }
     }
-
+    //Node last_node = node(nodes.size()-1);
+    //last_node.uid_ = n.uid_;
     nodes[n.uid_] = nodes.back();
     nodes.pop_back(); 
-
-
-
-
     return 1;
    }
 
-  node_iterator remove-node(node_iterator n_it);
-  size_type remove_edge(const Node&, const Node&);
-  size_type remove_edge(const Edge&);
-  edge_iterator remove_edge(edge_iterator e_it);
+  //node_iterator remove_node(node_iterator n_it);
+  //size_type remove_edge(const Node&, const Node&);
+  //size_type remove_edge(const Edge&);
+  //edge_iterator remove_edge(edge_iterator e_it);
   
 
 
