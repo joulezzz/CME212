@@ -123,12 +123,77 @@ class Graph {
     return 1;
    }
 
-  //node_iterator remove_node(node_iterator n_it);
-  //size_type remove_edge(const Node&, const Node&);
-  //size_type remove_edge(const Edge&);
-  //edge_iterator remove_edge(edge_iterator e_it);
-  
+  /** removes the node and points the iterator to the next node
+  * @return NodeIterator that points to the next node in a global order
+  * @param[in] n_it A NodeIterator 
+  * @pre 0 <= (*n_it),index() < old num_nodes() 
+  * @post new_num_nodes() = old num_nodes() - 1
+  * @post 0 <= (*n_it),index() < new num_nodes() 
+  */
+  node_iterator remove_node(node_iterator n_it){
+    remove_node(*n_it);
+    return n_it;
+  }
 
+  /** Removes the edge from the graph
+   * @param n1 Node object
+   * @param n2 Node Object 
+   * @pre @a n1.index() != @a n2.index()
+   * @pre 0 <= n1.index() < num_nodes(), same applies to n2.index()
+   * @return return a value of size_type 1 indicating edge has been erased from memory
+   * @post new num_edges = old num_edges - 1 
+   * @post edge with {n1,n2} or {n2,n1} does not exist is the list of edges in the graph
+   */
+  size_type remove_edge (const Node& n1, const Node& n2){
+       for (size_type j=0; j<adjList[n1.uid_].size(); j++) {
+           //if (adjacency[n1.uid_][j].first == adjList[n2.uid_])
+           if (adjList[n1.uid_][j].first == n2.uid_)
+           {
+               adjList[n1.uid_][j] = adjList[n1.uid_].back();
+               adjList[n1.uid_].pop_back();
+           }
+       }
+       for (size_type j=0; j<adjList[n2.uid_].size(); j++) {
+           //if (adjList[n2.uid_][j].first == adjList[n1.uid_])
+           if (adjList[n2.uid_][j].first == n1.uid_)
+           {
+               adjList[n2.uid_][j] = adjList[n2.uid_].back();
+               adjList[n2.uid_].pop_back();
+           }
+       }
+       for (size_type i=0; i<edges.size(); i++) {
+           if (((edges[i].first == n1.uid_) && (edges[i].second == n2.uid_))
+               || ((edges[i].first == n2.uid_) && (edges[i].second == n1.uid_)))
+           {
+               edges[i]=edges.back();
+               edges.pop_back();
+           }
+       }
+       return 1;
+   }
+
+  /** Removes the edge from the graph
+   * @param e An Edge object
+   * @pre @a 0 <= e.uid_ < num_edges()
+   * @return return a value of size_type 1 indicating edge has been erased from memory
+   * @post new num_edges = old num_edges - 1 
+   * @post edge with {e.n1(),e.n2()} or {e.n2(),e.n1()} does not exist is the list of edges in the graph
+   */
+   size_type remove_edge(const Edge& e){
+    auto n1=e.node1();
+    auto n2=e.node2();
+    return remove_edge(n1,n2);
+  }
+
+   /** Returns an edge iterator that points to the next edge after removal of the this edge in global order
+    * @param[in] e_it EdgeIterator 
+    * @pre 0 <= (*e_it).uid_ < num_edges()
+    * @post new num_edges() = old num_edges() - 1
+    */
+   edge_iterator remove_edge(edge_iterator e_it){
+    remove_edge(*e_it);
+    return e_it;
+   }
 
   //
   // NODES
