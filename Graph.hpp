@@ -86,6 +86,44 @@ class Graph {
   ~Graph() = default;
 
   //size_type remove_node(const Node& );
+  /** Removes the node object from the graph object 
+    * @return return 1 
+    * @pre 0 <= @a n.index() < old num_nodes()
+    * @param[in] n The node object being passed in
+    * @post return value of size_type is 1 indicating the node removal was a success
+    * @post new num_nodes = old num_nodes - 1
+    */
+  size_type remove_node (const Node n){
+    size_type uid_back_node = adjacency.size()-1;
+    for (size_type i = 0; i < adjacency[n.uid_].size(); i++) {
+      size_type n.uid2_node = adjacency[n.uid_][i].first;
+      size_type uid2_edge = adjacency[n.uid_][i].second;
+      edges[uid2_edge] = edges.back();
+      edges.pop_back();
+      for (size_type j = 0; j < adjacency[uid2_node].size(); j++) {
+        if (adjacency[uid2_node][j].first == n.uid_){
+          adjacency[uid2_node][j] = adjList[uid2_node].back();
+          adjacency[uid2_node].pop_back();
+        }
+      }
+    }
+
+    adjacency[n.uid_] = adjacency.back();
+    adjacency.pop_back();
+
+    for (size_type i = 0; i < adjacency.size(); i++){
+      for (size_type j = 0; j < adjacency[i].size(); j++){
+        if (adjacency[i][j].first == uid_back_node){
+          adjacency[i][j].first = n.uid_;
+        }
+      }
+    }
+
+    nodes[n.uid_] = nodes.back();
+    nodes.pop_back(); 
+    return 1;
+   }
+
   //node_iterator remove-node(node_iterator n_it);
   //size_type remove_edge(const Node&, const Node&);
   //size_type remove_edge(const Edge&);
