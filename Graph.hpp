@@ -98,14 +98,14 @@ class Graph {
     for (size_type i = 0; i < adjacency[n.uid_].size(); i++) {
       size_type uid2_node = adjacency[n.uid_][i].first;
       size_type uid2_edge = adjacency[n.uid_][i].second;
-      edges[uid2_edge] = edges.back();
-      edges.pop_back();
       for (size_type j = 0; j < adjacency[uid2_node].size(); j++) {
         if (adjacency[uid2_node][j].first == n.uid_){
           adjacency[uid2_node][j] = adjacency[uid2_node].back();
           adjacency[uid2_node].pop_back();
         }
       }
+      edges[uid2_edge] = edges.back();
+      edges.pop_back();
     }
 
     adjacency[n.uid_] = adjacency.back();
@@ -121,6 +121,10 @@ class Graph {
 
     nodes[n.uid_] = nodes.back();
     nodes.pop_back(); 
+
+
+
+
     return 1;
    }
 
@@ -309,6 +313,7 @@ class Graph {
    * Complexity: O(1).
    */
   Node node(size_type i) const {
+    assert(i < size());
     return Node(this, i);
   }
 
