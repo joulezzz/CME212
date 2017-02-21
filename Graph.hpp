@@ -96,13 +96,13 @@ class Graph {
   size_type remove_node (const Node n){
     size_type uid_back_node = adjacency.size()-1;
     for (size_type i = 0; i < adjacency[n.uid_].size(); i++) {
-      size_type n.uid2_node = adjacency[n.uid_][i].first;
+      size_type uid2_node = adjacency[n.uid_][i].first;
       size_type uid2_edge = adjacency[n.uid_][i].second;
       edges[uid2_edge] = edges.back();
       edges.pop_back();
       for (size_type j = 0; j < adjacency[uid2_node].size(); j++) {
         if (adjacency[uid2_node][j].first == n.uid_){
-          adjacency[uid2_node][j] = adjList[uid2_node].back();
+          adjacency[uid2_node][j] = adjacency[uid2_node].back();
           adjacency[uid2_node].pop_back();
         }
       }
