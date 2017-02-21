@@ -175,9 +175,6 @@ CombinedForce<CombinedForce<Force1, Force2>, Force3> make_combined_force(Force1 
  return make_combined_force(make_combined_force(f1,f2), f3);
 }
 
-// if norm( n.position() - Point(0.5, 0.5, -0.5) ) < radius // violated (here radius = 0.15)
-//	n.remove_node(); // removes node and all of its edges
-
 /**
 struct PlaneConstraint {
   template<typename GRAPH>
