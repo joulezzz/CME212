@@ -6,8 +6,8 @@
  */
 
 #include <algorithm>
-#include <cassert>
 #include <vector>
+#include <cassert>
 
 #include "CME212/Util.hpp"
 #include "CME212/Point.hpp"
@@ -19,785 +19,889 @@
  * Users can add and retrieve nodes and edges. Edges are unique (there is at
  * most one edge between any pair of distinct nodes).
  */
-// Allows Nodes to support user specified value of type node_value_type: Graph<V>
-template <typename V, typename E>
+template<typename V, typename E>
 class Graph {
- private:
+private:
 
-  // Use this space for declarations of important internal types you need
-  // later in the Graph's definition.
-  // (As with all the "YOUR CODE HERE" markings, you may not actually NEED
-  // code here. Just use the space if you need it.)
+public:
 
- public:
+    //
+    // PUBLIC TYPE DEFINITIONS
+    //
 
-  //
-  // PUBLIC TYPE DEFINITIONS
-  //
+    /** Type of this graph. */
+    using graph_type = Graph;
 
-  /** Type of the node values */
-  //using node_value_type = V;
-  /** Type of the node and edge values */
-  typedef V node_value_type;
-  typedef E edge_value_type;
+    typedef V node_value_type;
+    typedef E edge_value_type;
 
-  /** Type of this graph. */
-  using graph_type = Graph;
+    /** Predeclaration of Node type. */
+    class Node;
 
-  /** Predeclaration of Node type. */
-  class Node;
-  /** Synonym for Node (following STL conventions). */
-  using node_type = Node;
+    /** Synonym for Node (following STL conventions). */
+    using node_type = Node;
 
-  /** Predeclaration of Edge type. */
-  class Edge;
-  /** Synonym for Edge (following STL conventions). */
-  using edge_type = Edge;
+    /** Predeclaration of Edge type. */
+    class Edge;
+    /** Synonym for Edge (following STL conventions). */
+    using edge_type = Edge;
 
-  /** Type of node iterators, which iterate over all graph nodes. */
-  class NodeIterator;
-  /** Synonym for NodeIterator */
-  using node_iterator = NodeIterator;
+    /** Type of node iterators, which iterate over all graph nodes. */
+    class NodeIterator;
+    /** Synonym for NodeIterator */
+    using node_iterator = NodeIterator;
 
-  /** Type of edge iterators, which iterate over all graph edges. */
-  class EdgeIterator;
-  /** Synonym for EdgeIterator */
-  using edge_iterator = EdgeIterator;
+    /** Type of edge iterators, which iterate over all graph edges. */
+    class EdgeIterator;
+    /** Synonym for EdgeIterator */
+    using edge_iterator = EdgeIterator;
 
-  /** Type of incident iterators, which iterate incident edges to a node. */
-  class IncidentIterator;
-  /** Synonym for IncidentIterator */
-  using incident_iterator = IncidentIterator;
+    /** Type of incident iterators, which iterate incident edges to a node. */
+    class IncidentIterator;
+    /** Synonym for IncidentIterator */
+    using incident_iterator = IncidentIterator;
 
-  /** Type of indexes and sizes.
-      Return type of Graph::Node::index(), Graph::num_nodes(),
-      Graph::num_edges(), and argument type of Graph::node(size_type) */
-  using size_type = unsigned;
+    /** Type of indexes and sizes.
+        Return type of Graph::Node::index(), Graph::num_nodes(),
+        Graph::num_edges(), and argument type of Graph::node(size_type) */
+    using size_type = unsigned;
 
-  //
-  // CONSTRUCTORS AND DESTRUCTOR
-  //
+    using uid_type = size_type;
 
-  /** Construct an empty graph. */
-  Graph() : nodes(),edges(),adjacency(){
-  }
+    //
+    // CONSTRUCTORS AND DESTRUCTOR
+    //
 
-  /** Default destructor */
-  ~Graph() = default;
+    /** Construct an empty graph. */
+    Graph() {
 
-  /** Removes the node object from the graph object 
-    * @return return 1 
-    * @pre 0 <= @a n.index() < old num_nodes()
-    * @param[in] n The node object being passed in
-    * @post return value of size_type is 1 indicating the node removal was a success
-    * @post new num_nodes = old num_nodes - 1
-    */
-  size_type remove_node(const Node& n){
-    size_type uid_back_node = adjacency.size()-1;
-    for (size_type i = 0; i < adjacency[n.uid_].size(); i++) {
-      size_type uid2_node = adjacency[n.uid_][i].first;
-      size_type uid2_edge = adjacency[n.uid_][i].second;
-      for (size_type j = 0; j < adjacency[uid2_node].size(); j++) {
-        if (adjacency[uid2_node][j].first == n.uid_){
-          adjacency[uid2_node][j] = adjacency[uid2_node].back();
-          adjacency[uid2_node].pop_back();
+    }
+
+    /** Default destructor */
+    ~Graph() = default;
+
+    //
+    // NODES
+    //
+
+    /** @class Graph::Node
+     * @brief Class representing the graph's nodes.
+     *
+     * Node objects are used to access information about the Graph's nodes.
+     */
+    class Node : private totally_ordered<Node> {
+    public:
+        /** Construct an invalid node.
+         *
+         * Valid nodes are obtained from the Graph class, but it
+         * is occasionally useful to declare an @i invalid node, and assign a
+         * valid node to it later. For example:
+         *
+         * @code
+         * Graph::node_type x;
+         * if (...should pick the first node...)
+         *   x = graph.node(0);
+         * else
+         *   x = some other node using a complicated calculation
+         * do_something(x);
+         * @endcode
+         */
+
+        Node() {
+
         }
-      }
-      edges[uid2_edge] = edges.back();
-      edges.pop_back();
-    }
-    adjacency[n.uid_] = adjacency.back();
-    adjacency.pop_back();
-    for (size_type i = 0; i < adjacency.size(); i++){
-      for (size_type j = 0; j < adjacency[i].size(); j++){
-        if (adjacency[i][j].first == uid_back_node){
-          adjacency[i][j].first = n.uid_;
+
+        /** Return this node's position. */
+        const Point &position() const {
+            assert(valid());
+            return graph_->nodes_[uid_].position_;
         }
-      }
-    }
-    nodes[n.uid_] = nodes.back();
-    nodes.pop_back(); 
-    return 1;
-   }
 
-  /** removes the node and points the iterator to the next node
-  * @return NodeIterator that points to the next node in a global order
-  * @param[in] n_it A NodeIterator 
-  * @pre 0 <= (*n_it),index() < old num_nodes() 
-  * @post new_num_nodes() = old num_nodes() - 1
-  * @post 0 <= (*n_it),index() < new num_nodes() 
-  */
-  node_iterator remove_node(node_iterator n_it){
-    remove_node(*n_it);
-    return n_it;
-  }
-
-  /** Removes the edge from the graph
-   * @param n1 Node object
-   * @param n2 Node Object 
-   * @pre @a n1.index() != @a n2.index()
-   * @pre 0 <= n1.index() < num_nodes(), same applies to n2.index()
-   * @return return a value of size_type 1 indicating edge has been erased from memory
-   * @post new num_edges = old num_edges - 1 
-   * @post edge with {n1,n2} or {n2,n1} does not exist is the list of edges in the graph
-   */
-  size_type remove_edge (const Node& n1, const Node& n2){
-       for (size_type j=0; j<adjacency[n1.uid_].size(); j++) {
-           if (adjacency[n1.uid_][j].first == n2.uid_)
-           {
-               adjacency[n1.uid_][j] = adjacency[n1.uid_].back();
-               adjacency[n1.uid_].pop_back();
-           }
-       }
-       for (size_type j=0; j<adjacency[n2.uid_].size(); j++) {
-           if (adjacency[n2.uid_][j].first == n1.uid_)
-           {
-               adjacency[n2.uid_][j] = adjacency[n2.uid_].back();
-               adjacency[n2.uid_].pop_back();
-           }
-       }
-       for (size_type i=0; i<edges.size(); i++) {
-           if (((edges[i].first == n1.uid_) && (edges[i].second == n2.uid_))
-               || ((edges[i].first == n2.uid_) && (edges[i].second == n1.uid_)))
-           {
-               edges[i]=edges.back();
-               edges.pop_back();
-           }
-       }
-       return 1;
-   }
-
-  /** Removes the edge from the graph
-   * @param e An Edge object
-   * @pre @a 0 <= e.uid_ < num_edges()
-   * @return return a value of size_type 1 indicating edge has been erased from memory
-   * @post new num_edges = old num_edges - 1 
-   * @post edge with {e.n1(),e.n2()} or {e.n2(),e.n1()} does not exist is the list of edges in the graph
-   */
-   size_type remove_edge(const Edge& e){
-    auto n1=e.node1();
-    auto n2=e.node2();
-    return remove_edge(n1,n2);
-  }
-
-   /** Returns an edge iterator that points to the next edge after removal of the this edge in global order
-    * @param[in] e_it EdgeIterator 
-    * @pre 0 <= (*e_it).uid_ < num_edges()
-    * @post new num_edges() = old num_edges() - 1
-    */
-   edge_iterator remove_edge(edge_iterator e_it){
-    remove_edge(*e_it);
-    return e_it;
-   }
-
-  //
-  // NODES
-  //
-
-  /** @class Graph::Node
-   * @brief Class representing the graph's nodes.
-   *
-   * Node objects are used to access information about the Graph's nodes.
-   */
-  class Node {
-   public:
-    /** Construct an invalid node.
-     *
-     * Valid nodes are obtained from the Graph class, but it
-     * is occasionally useful to declare an @i invalid node, and assign a
-     * valid node to it later. For example:
-     *
-     * @code
-     * Graph::node_type x;
-     * if (...should pick the first node...)
-     *   x = graph.node(0);
-     * else
-     *   x = some other node using a complicated calculation
-     * do_something(x);
-     * @endcode
-     */
-    Node() {
-    }
-
-    /** Return this node's position. */
-    const Point& position() const {
-      return graph_->nodes[uid_].first;
-    }
-
-    /** Modifiable version of position*/
-    Point& position() {
-      return graph_->nodes[uid_].first;
-    }
-
-    /** Return this node's index, a number in the range [0, graph_size). */
-    size_type index() const {
-      return uid_;
-    }
-
-    // HW1: YOUR CODE HERE
-    // Supply definitions AND SPECIFICATIONS for:
-
-    /**
-     * @return The value of this node which is node_value_type
-     */
-    node_value_type & value (){
-      return graph_->nodes[uid_].second;
-    }
-    
-       /**
-     * @return The value of this node which is const node_value_type
-     */
-    const node_value_type & value () const {
-      return graph_->nodes[uid_].second;
-    }
-
-       /**
-     * @return The number of nodes adjacent to this node
-     */
-    size_type degree() const {
-      return graph_->adjacency[uid_].size();
-
-    }
-
-    /**
-     * @return An IncidentIterator that points to an edge adjacent to
-     *            the this node that is the first of the sequence of edges adjacent
-     *         to this node
-     */
-    IncidentIterator edge_begin() const {
-      return IncidentIterator(graph_, uid_, 0);
-
-    }
-
-    /**
-     * @return An IncidentIterator that does not point to an ajacent edge
-     * indicating that all adjacent edges have been iterated through
-     */
-    IncidentIterator edge_end() const {
-      return IncidentIterator(graph_, uid_, degree());
-    }
-
-    /** Test whether this node and @a n are equal.
-     *
-     * Equal nodes have the same graph and the same index.
-     */
-    bool operator==(const Node& n) const {
-      if (graph_ == n.graph_) // recall these are pointers so this check their address
-        if (uid_ ==  n.uid_)  // this is not a pointer, so it compares numbers
-          return true;
-      return false;
-    }
-
-    /** Test whether this node is less than @a n in a global order.
-     *
-     * This ordering function is useful for STL containers such as
-     * std::map<>. It need not have any geometric meaning.
-     *
-     * The node ordering relation must obey trichotomy: For any two nodes x
-     * and y, exactly one of x == y, x < y, and y < x is true.
-     */
-    bool operator<(const Node& n) const {
-      if (graph_ == n.graph_){ // if this belongs to same graph
-        if (uid_ <  n.uid_)
-          return true;
-      }
-      else{
-        if (graph_ < n.graph_) // if this belongs to previous graph
-          return true;
-      }
-      return false;
-    }
-
-   private:
-    // Allow Graph to access Node's private member data and functions.
-    friend class Graph;
-    Graph* graph_;
-    size_type uid_;
-    Node(const Graph* graph_pointer, size_type uid)
-        : graph_( const_cast<Graph*>(graph_pointer) ), uid_( uid ) {
-    }
-    // Use this space to declare private data members and methods for Node
-    // that will not be visible to users, but may be useful within Graph.
-    // i.e. Graph needs a way to construct valid Node objects
-  };
-
-  /** Return the number of nodes in the graph.
-   *
-   * Complexity: O(1).
-   */
-  size_type size() const {
-    return nodes.size(); // recall nodes is a vector, size is its method
-  }
-
-  /** Synonym for size(). */
-  size_type num_nodes() const {
-    return size(); // just calls the same function above
-  }
-
-  /** Add a node to the graph, returning the added node.
-   * @param[in] position The new node's position
-   * @param[in] new_value The new node's value
-   * @post new num_nodes() == old num_nodes() + 1
-   * @post result_node.index() == old num_nodes()
-   *
-   * Complexity: O(1) amortized operations.
-   */
-  Node add_node(const Point& position, const node_value_type& new_value = node_value_type()) {
-    //nodes.push_back(position);
-    nodes.push_back(std::make_pair(position, new_value));
-    adjacency.push_back(std::vector<std::pair<size_type, size_type>> ()); 
-    return Node(this,nodes.size()-1); 
-  }
-
-  /** Determine if a Node belongs to this Graph
-   * @return True if @a n is currently a Node of this Graph
-   *
-   * Complexity: O(1).
-   */
-  bool has_node(const Node& n) const {
-    if (n.graph_ == this)
-      if (n.uid_<nodes.size())
-        return true;
-    return false;
-  }
-
-  /** Return the node with index @a i.
-   * @pre 0 <= @a i < num_nodes()
-   * @post result_node.index() == i
-   *
-   * Complexity: O(1).
-   */
-  Node node(size_type i) const {
-    assert(i < size());
-    return Node(this, i);
-  }
-
-  //
-  // EDGES
-  //
-
-  /** @class Graph::Edge
-   * @brief Class representing the graph's edges.
-   *
-   * Edges are order-insensitive pairs of nodes. Two Edges with the same nodes
-   * are considered equal if they connect the same nodes, in either order.
-   */
-  class Edge {
-   public:
-    /** Construct an invalid Edge. */
-    Edge() {
-    }
-
-    /**
-     * @return The value of this node which is node_value_type
-     */
-    edge_value_type & value(){
-      return graph_->edge_values[uid_];
-    }
-    const edge_value_type & value() const{
-      return graph_->edge_values[uid_];
-    }
-
-    /** Return a node of this Edge */
-    Node node1() const {
-      return Node(graph_,node1_id);
-    }
-
-    /** Return the other node of this Edge */
-    Node node2() const {
-      return Node(graph_,node2_id);
-    }
-
-    /** Test whether this edge and @a e are equal.
-     *
-     * Equal edges represent the same undirected edge between two nodes.
-     */
-    bool operator==(const Edge& e) const {
-      if (graph_ == e.graph_){
-        if ((node1_id == e.node1_id and node2_id == e.node2_id) or 
-             (node1_id == e.node2_id and node2_id == e.node1_id)){
-          return true;
+        /** Return this node's position. */
+        Point &position() {
+            assert(valid());
+            return graph_->nodes_[uid_].position_;
         }
-      }
-      return false;
-    }
 
-    /** Return */ 
-    double length() const {
-        return norm(node1().position() - node2().position());
-    }
+        /** Return this node's index, a number in the range [0, graph_size). */
+        size_type index() const {
+            assert(valid());
+            return graph_->nodes_[uid_].idx_;
+        }
 
-    /** Test whether this edge is less than @a e in a global order.
+        /** Return this node's value. */
+        const node_value_type &value() const {
+            assert(valid());
+            return graph_->nodes_[uid_].value_;
+        }
+
+        /** Return this node's value. */
+        node_value_type &value() {
+            assert(valid());
+            return graph_->nodes_[uid_].value_;
+        }
+
+        /** Return this node's degree. */
+        size_type degree() const {
+            assert(valid());
+            return graph_->adjacency_[uid_].size();
+        }
+
+        /** Return the beginning of this node's incident iterator. */
+        incident_iterator edge_begin() const {
+            assert(valid());
+            return IncidentIterator(graph_, uid_, 0);
+        }
+
+        /** Return the ending of this node's incident iterator. */
+        incident_iterator edge_end() const {
+            assert(valid());
+            return IncidentIterator(graph_, uid_, degree());
+        }
+
+        /** Test whether this node and @a n are equal.
+         *
+         * Equal nodes have the same graph and the same index.
+         */
+        bool operator==(const Node &n) const {
+            assert(valid());
+            return (graph_ == n.graph_) and (uid_ == n.uid_);
+        }
+
+        /** Test whether this node is less than @a n in a global order.
+         *
+         * This ordering function is useful for STL containers such as
+         * std::map<>. It need not have any geometric meaning.
+         *
+         * The node ordering relation must obey trichotomy: For any two nodes x
+         * and y, exactly one of x == y, x < y, and y < x is true.
+         */
+        bool operator<(const Node &n) const {
+            assert(valid());
+            if (graph_ == n.graph_) {
+                return uid_ < n.uid_;
+            }
+            return (graph_ < n.graph_);
+        }
+
+    private:
+        // Allow Graph to access Node's private member data and functions.
+        friend class Graph;
+
+        Graph *graph_;
+        size_type uid_;
+
+        /** Valid Node constructor
+         * @pre @a graph_ != NULL
+         * @pre 0 <= @a uid_ < graph_->num_nodes()
+         */
+        Node(const Graph *graph, size_type uid)
+                : graph_(const_cast<Graph *>(graph)), uid_(uid) {
+            assert(graph_ != NULL);
+            assert(0 <= uid_ and uid_ < graph_->nodes_.size());
+        }
+
+        /** Check the representation invariant of the node
+         * @return true if node is a valid node.
+         *         false if node is invalid.
+         */
+        bool valid() const {
+            return uid_ >= 0 and uid_ < graph_->nodes_.size()
+                   and graph_->nodes_[uid_].idx_ < graph_->i2u_.size()
+                   and graph_->i2u_[graph_->nodes_[uid_].idx_] == uid_;
+        }
+    };
+
+    /** Return the number of nodes in the graph.
      *
-     * This ordering function is useful for STL containers such as
-     * std::map<>. It need not have any interpretive meaning.
+     * Complexity: O(1).
      */
-    bool operator<(const Edge& e) const {
-      if (graph_ == e.graph_){
-        if (uid_ < e.uid_)
-          return true;
-      }
-      else{
-        if (graph_ < e.graph_)
-          return true;
-      }
-      return false;
+    size_type size() const {
+        return i2u_.size();
     }
 
-   private:
-    // Allow Graph to access Edge's private member data and functions.
-    friend class Graph;
-    Graph* graph_;
-    size_type uid_;
-    size_type node1_id;
-    size_type node2_id;
-    Edge(const Graph* graph_pointer, size_type uid, size_type node1, size_type node2)
-        : graph_(const_cast<Graph*>(graph_pointer)), uid_(uid), node1_id(node1), node2_id(node2){
-    }
-    // Use this space to declare private data members and methods for Edge
-    // that will not be visible to users, but may be useful within Graph.
-    // i.e. Graph needs a way to construct valid Edge objects
-  };
-
-  /** Return the total number of edges in the graph.
-   *
-   * Complexity: No more than O(num_nodes() + num_edges()), hopefully less
-   */
-  size_type num_edges() const {
-    return edges.size();
-  }
-
-  /** Return the edge with index @a i.
-   * @pre 0 <= @a i < num_edges()
-   *
-   * Complexity: No more than O(num_nodes() + num_edges()), hopefully less
-   */
-  Edge edge(size_type i) const {
-    return Edge(this, i, edges[i].first, edges[i].second);
-  }
-
-  /** Test whether two nodes are connected by an edge.
-   * @pre @a a and @a b are valid nodes of this graph
-   * @return True if for some @a i, edge(@a i) connects @a a and @a b.
-   *
-   * Complexity: No more than O(num_nodes() + num_edges()), hopefully less
-   */
-  bool has_edge(const Node& a, const Node& b) const {
-    for (unsigned int i=0; i<adjacency[a.uid_].size(); i++)
-       if (b.uid_ == adjacency[a.uid_][i].first)
-         return true;
-    return false;
-  }
-
-  /** Add an edge to the graph, or return the current edge if it already exists.
-   * @pre @a a and @a b are distinct valid nodes of this graph
-   * @return an Edge object e with e.node1() == @a a and e.node2() == @a b
-   * @post has_edge(@a a, @a b) == true
-   * @post If old has_edge(@a a, @a b), new num_edges() == old num_edges().
-   *       Else,                        new num_edges() == old num_edges() + 1.
-   *
-   * Can invalidate edge indexes -- in other words, old edge(@a i) might not
-   * equal new edge(@a i). Must not invalidate outstanding Edge objects.
-   *
-   * Complexity: No more than O(num_nodes() + num_edges()), hopefully less
-   */
-  Edge add_edge(const Node& a, const Node& b, const edge_value_type& new_value = edge_value_type() ) {
-    for (unsigned int i=0; i<adjacency[a.uid_].size(); i++)
-       if (b.uid_ == adjacency[a.uid_][i].first)
-         return Edge(this, adjacency[a.uid_][i].second, a.uid_, b.uid_);
-    if (a<b){
-      edges.push_back(std::make_pair(a.uid_,b.uid_));
-      edge_values.push_back(new_value);
-    }
-    else{
-      edges.push_back(std::make_pair(b.uid_,a.uid_));
-      edge_values.push_back(new_value);
-    }
-    adjacency[a.uid_].push_back(std::make_pair(b.uid_,edges.size()-1));
-    adjacency[b.uid_].push_back(std::make_pair(a.uid_,edges.size()-1));
-    return Edge(this,edges.size()-1,a.uid_,b.uid_);
-  }
-
-  /** Remove all nodes and edges from this graph.
-   * @post num_nodes() == 0 && num_edges() == 0
-   *
-   * Invalidates all outstanding Node and Edge objects.
-   */
-  void clear() {
-    nodes.clear();
-    edges.clear();
-    adjacency.clear();
-  }
-
-  //
-  // Node Iterator
-  //
-
-  /** @class Graph::NodeIterator
-   * @brief Iterator class for nodes. A forward iterator. */
-  class NodeIterator : private totally_ordered<NodeIterator> {
-
-   public:
-    // These type definitions let us use STL's iterator_traits.
-    using value_type        = Node;                     // Element type
-    using pointer           = Node*;                    // Pointers to elements
-    using reference         = Node&;                    // Reference to elements
-    using difference_type   = std::ptrdiff_t;           // Signed difference
-    using iterator_category = std::input_iterator_tag;  // Weak Category, Proxy
-
-    /** Construct an invalid NodeIterator. */
-    NodeIterator() {
+    /** Synonym for size(). */
+    size_type num_nodes() const {
+        return size();
     }
 
-    /** Constructor for a NodeIterator
-     * @param[in] g The an object of type Graph
-     * @param[in] i The value of of type size_type
-     * @return NodeIterator that belongs to @a g and points to the @a i'th Node in a global order 
+    /** Add a node to the graph, returning the added node.
+     * @param[in] position The new node's position
+     * @post new num_nodes() == old num_nodes() + 1
+     * @post result_node.index() == old num_nodes()
+     *
+     * Complexity: O(1) amortized operations.
+     */
+    Node add_node(const Point &position, const node_value_type &node_value = node_value_type()) {
+        uid_type  uid = nodes_.size();
+        size_type idx = i2u_.size();
+        node_info new_node (idx, position, node_value);
+        nodes_.push_back(new_node);
+        i2u_.push_back(uid);
+        std::vector <edge_info> adjacent_edges;
+        adjacency_.push_back(adjacent_edges);
+        return Node(this, uid);
+    }
+
+    /** Determine if a Node belongs to this Graph
+     * @return True if @a n is currently a Node of this Graph
+     *
+     * Complexity: O(1).
+     */
+    bool has_node(const Node &n) const {
+        return (this == n.graph_) and (i2u_[n.index()] == n.uid_);
+    }
+
+    /** Return the node with index @a i.
      * @pre 0 <= @a i < num_nodes()
+     * @post result_node.index() == i
+     *
+     * Complexity: O(1).
      */
-    NodeIterator(const Graph* g, size_type i): graph_(g), index_points(i) {
+    Node node(size_type i) const {
+        assert(0 <= i and i < num_nodes());
+        return Node(this, i2u_[i]);
     }
 
-    // HW1 #2: YOUR CODE HERE
-    // Supply definitions AND SPECIFICATIONS for:
-
-    /** "Dereferences the NodeIterator"
-     * @return The Node object that this NodeIterator points to
+    /** Remove a node from the graph.
+     * @param[in] n The valid node to remove
+     * @return The index of the removed node
+     *
+     * @pre @a n is valid node
+     * @pre graph.node(i).index() == i for all 0 <= i <= num_nodes()
+     * @pre graph.node(@a n.index()) == @a n
+     * @pre has_node(@a n) == true
+     * @post @a n is invalidated
+     * @post new num_nodes() == old num_nodes() - 1
+     * @post has_node(@a n) == false
+     * @post For all edges e that adjacent to @a n
+     *       ie. e.node1() == @a n or e.node2() == @a n,
+     *       e becomes invalid
+     * @post new num_edges() == old num_edges() - n.degree()
+     * @post Outstanding NodeIterators and EdgeIterators are invalidated
+     * @post Outstanding IncidentIterators associated with @a n is invalidated
+     *
+     * Complexity: O(num_nodes)
      */
-    Node operator*() const {
-        return Node(graph_ , index_points);
+    size_type remove_node(const Node &n) {
+
+        // Remove adjacent edges
+        for (auto iit = n.edge_begin(); iit != n.edge_end(); ++iit) {
+            Edge e = *iit;
+            Node head = e.node2();
+            remove_tail_node(head, n);
+        }
+        adjacency_[n.uid_].clear();
+
+        // Reindex the idx of the nodes followed the removed node
+        // in nodes vector
+        size_type idx = n.index();
+        for (size_type k = idx; k < i2u_.size(); ++k) {
+            --nodes_[i2u_[k]].idx_;
+        }
+
+        // Erase the node from i2u
+        i2u_.erase(i2u_.begin() + idx);
+
+        return idx;
     }
 
-    /** Increments the NodeIterator to point to the next Node or nullptr
-     * @return NodeIterator that points to exactly one of the following:
-     *                1.) next Node object in the global order    if the global index this points to < nodes.size()
-     *                2.) nullptr                                 if the global index this points to = nodes.size(),  
+    /** Remove a node from the graph.
+     * @param[in] ni The valid node iterator to remove
+     * @return NodeIterator pointing to node followed the erased node
+     *
+     * @pre @a n is valid node
+     * @pre graph.node(i).index() == i for all 0 <= i <= num_nodes()
+     * @pre graph.node(@a n.index()) == @a n
+     * @pre has_node(@a n) == true
+     * @post @a n becomes invalid node
+     * @post new num_nodes() == old num_nodes() - 1
+     * @post has_node(@a n) == false
+     * @post For all edges e that adjacent to @a n
+     *       ie. e.node1() == @a n or e.node2() == @a n,
+     *       e becomes invalid.
+     * @post new num_edges() == old num_edges() - n.degree()
+     * @post Outstanding NodeIterators and EdgeIterators are invalidated.
+     * @post Outstanding IncidentIterators associated with @a n is invalidated.
+     *
+     * Complexity: O(num_nodes)
      */
-    NodeIterator& operator++(){
-      index_points++;
-      return  *this;
-
+    node_iterator remove_node(NodeIterator ni) {
+        Node n = *ni;
+        size_type idx = remove_node(n);
+        return NodeIterator(this, idx);
     }
 
-    /** Checks if two NodeIterators are the "same"
-     * @param[in] nodeIterator A NodeIterator object
-     * @return bool value indicating true if all the following are true
-     *         1. @a nodeIterator and this belong to the same graph
-     *         2. the global order of the Node this points to is the same as the global order of the Node @a nodeIterator points to  
+    //
+    // EDGES
+    //
+
+    /** @class Graph::Edge
+     * @brief Class representing the graph's edges.
+     *
+     * Edges are order-insensitive pairs of nodes. Two Edges with the same nodes
+     * are considered equal if they connect the same nodes, in either order.
      */
-    bool operator==(const NodeIterator& nodeIterator) const {
-      return ( nodeIterator.graph_ == graph_) && (nodeIterator.index_points == index_points);
-    }
+    class Edge : private totally_ordered<Edge> {
+    public:
+        /** Construct an invalid Edge. */
+        Edge() {
 
-   private:
-    friend class Graph;
-    // HW1 #2: YOUR CODE HERE
-    const Graph *graph_;
-    size_type index_points;
-  };
+        }
 
-  // HW1 #2: YOUR CODE HERE
-  // Supply definitions AND SPECIFICATIONS for:
+        /** Return a node of this Edge */
+        Node node1() const {
+            return Node(graph_, node1_uid_);
+        }
 
- /** Returns the first NodeIterator
-  * @return NodeIterator that points to the first Node in the global order if graph is nonempty, 
-              otherwise returns a nullptr
-  */
-  NodeIterator node_begin() const {
-      return NodeIterator(this, 0);
-  }
+        /** Return the other node of this Edge */
+        Node node2() const {
+            return Node(graph_, node2_uid_);
+        }
 
- /** Returns a NodeIterator that indicates the end of the nodes
-  * @return NodeIterator that is the nullptr 
-  */
-  NodeIterator node_end() const {
-    return NodeIterator(this, nodes.size());
-  }
+        /** Return the length of this Edge */
+        double length() const {
+            return norm(node1().position() - node2().position());
+        }
 
-  //
-  // Incident Iterator
-  //
+        /** Return the value of this Edge */
+        edge_value_type &value() {
+            size_type index;
+            if (node1_uid_ > node2_uid_) {
+                index = graph_->match_tail_node(Node(graph_, node2_uid_), Node(graph_, node1_uid_));
+                return graph_->adjacency_[node2_uid_][index].value_;
+            }
+            index = graph_->match_tail_node(Node(graph_, node1_uid_), Node(graph_, node2_uid_));
+            return graph_->adjacency_[node1_uid_][index].value_;
+        }
 
-  /** @class Graph::IncidentIterator
-   * @brief Iterator class for edges incident to a node. A forward iterator. */
-  class IncidentIterator : private totally_ordered<IncidentIterator> {
-   public:
-    // These type definitions let us use STL's iterator_traits.
-    using value_type        = Edge;                     // Element type
-    using pointer           = Edge*;                    // Pointers to elements
-    using reference         = Edge&;                    // Reference to elements
-    using difference_type   = std::ptrdiff_t;           // Signed difference
-    using iterator_category = std::input_iterator_tag;  // Weak Category, Proxy
+        /** Return the value of this Edge */
+        const edge_value_type &value() const {
+            return value();
+        }
 
-    /** Construct an invalid IncidentIterator. */
-    IncidentIterator() {
-    }
+        /** Test whether this edge and @a e are equal.
+         *
+         * Equal edges represent the same undirected edge between two nodes.
+         */
+        bool operator==(const Edge &e) const {
+            bool same_graph = (graph_ == e.graph_);
+            bool direction1 = ((node1_uid_ == e.node1_uid_) and (node2_uid_ == e.node2_uid_));
+            bool direction2 = ((node1_uid_ == e.node2_uid_) and (node2_uid_ == e.node1_uid_));
+            return same_graph and (direction1 or direction2);
+        }
 
-    /** Constructor for Incident iterator 
-     * @param[in] graph An object of Graph
-     * @param[in] node_index A value of size_type
-     * @param[in] edge_index A value of size_type
-     * @return IncidentIterator
-     * @pre 0 <= @a node_index < num_nodes()
-     * @pre 0 <= @a edge_index < degree()
-     * @post IncidentIterator belongs to @a graph and the Node in global order @a node_index and points to the Edge in a local order @a edge_index
+        /** Test whether this edge is less than @a e in a global order.
+         *
+         * This ordering function is useful for STL containers such as
+         * std::map<>. It need not have any interpretive meaning.
+         */
+        bool operator<(const Edge &e) const {
+            if (graph_ == e.graph_) {
+                if (node1_uid_ == e.node1_uid_) {
+                    return (node2_uid_ < e.node2_uid_);
+                }
+                return (node1_uid_ < e.node1_uid_);
+            }
+            return (graph_ < e.graph_);
+        }
+
+    private:
+        friend class Graph;
+
+        Graph *graph_;
+        size_type node1_uid_;
+        size_type node2_uid_;
+
+        /** Valid Edge constructor
+         * @pre @a graph_ != NULL
+         * @pre 0 <= @a node1_uid_, @a node2_uid_ < graph_->num_nodes()
+         * @pre @a node1_uid_ != @a node2_uid_
+         */
+        Edge(const Graph *graph, size_type node1_uid, size_type node2_uid)
+                : graph_(const_cast<Graph *>(graph)), node1_uid_(node1_uid), node2_uid_(node2_uid) {
+            assert(graph_ != NULL);
+            assert(node1_uid_ != node2_uid_);
+            assert(0 <= node1_uid_ and node1_uid_ < graph_->nodes_.size());
+            assert(0 <= node2_uid_ and node2_uid_ < graph_->nodes_.size());
+        }
+    };
+
+    /** Return the total number of edges in the graph.
+     *
+     * Complexity: O(1)
      */
-    IncidentIterator(Graph* graph, size_type node_index, size_type edge_index) : graph_(graph), node_index_(node_index), edge_index_(edge_index) {
+    size_type num_edges() const {
+        return std::distance(edge_begin(), edge_end());
     }
 
-    // HW1 #3: YOUR CODE HERE
-    // Supply definitions AND SPECIFICATIONS for:
-
-    /** 
-     * @return The Edge that the this points to
+    /** Return the edge with index @a i.
+     * @pre 0 <= @a i < num_edges()
+     *
+     * Complexity: O(num_nodes() + num_edges())
      */
-    Edge operator*() const {
-      return Edge(graph_, graph_->adjacency[node_index_][edge_index_].second, node_index_, graph_->adjacency[node_index_][edge_index_].first);
+    Edge edge(size_type i) const {
+        assert(0 <= i and i < num_edges());
+        return *std::next(edge_begin(), i);
     }
 
-    /** 
-     * @return IncidentIterator to point to the next adjacent node or nullptr
-     * @post IncidentIterator points to 
-     *              1. next adjacent node if its local position order < degree()
-     *                2. nullptr if its local position order = degree()
+    /** Test whether two nodes are connected by an edge.
+     * @pre @a a and @a b are valid nodes of this graph
+     * @return True if for some @a i, edge(@a i) connects @a a and @a b.
+     *
+     * Complexity: O(degree())
      */
-    IncidentIterator& operator++() {
-      edge_index_++;
-      return *this;
+    bool has_edge(const Node &a, const Node &b) const {
+        size_type index = match_tail_node(a, b);
+        return index != a.degree();
     }
 
-    /** Checks if two IncidentIterators are the same
-     * @param[in] incidentIterator A IncidentIterator 
-     * @return bool value
-     * @post bool is true if the following are all true
-     *         1. if incidentIterator and this belong to the same graph
-     *         2. if incidentIterator and this are iterating over the adjacent Nodes for the same Node in a global order
-     *         3. if incidentIterator and this have the same edge value in a local order
+    /** Add an edge to the graph, or return the current edge if it already exists.
+     * @pre @a a and @a b are distinct valid nodes of this graph
+     * @return an Edge object e with e.node1() == @a a and e.node2() == @a b
+     * @post has_edge(@a a, @a b) == true
+     * @post If old has_edge(@a a, @a b), new num_edges() == old num_edges().
+     *       Else,                        new num_edges() == old num_edges() + 1.
+     *
+     * Can invalidate edge indexes -- in other words, old edge(@a i) might not
+     * equal new edge(@a i). Must not invalidate outstanding Edge objects.
+     *
+     * Complexity: O(degree())
      */
-    bool operator==(const IncidentIterator& incidentIterator) const {
-      return ( incidentIterator.graph_ == graph_) && (incidentIterator.node_index_ == node_index_) && (incidentIterator.edge_index_ == edge_index_);
+    Edge add_edge(const Node &a, const Node &b) {
+        size_type node1_uid = a.uid_;
+        size_type node2_uid = b.uid_;
+        if (!has_edge(a, b)) {
+            edge_info new_edge1(node2_uid, edge_value_type());
+            edge_info new_edge2(node1_uid, edge_value_type());
+            adjacency_[node1_uid].push_back(new_edge1);
+            adjacency_[node2_uid].push_back(new_edge2);
+        }
+        return Edge(this, node1_uid, node2_uid);
     }
 
-   private:
-    friend class Graph;
-    const Graph *graph_;
-    size_type node_index_;
-    size_type edge_index_; 
-
-
-    // HW1 #3: YOUR CODE HERE
-
-  };
-
-  //
-  // Edge Iterator
-  //
-
-  /** @class Graph::EdgeIterator
-   * @brief Iterator class for edges. A forward iterator. */
-  class EdgeIterator : private totally_ordered<EdgeIterator> {
-   public:
-    // These type definitions let us use STL's iterator_traits.
-    using value_type        = Edge;                     // Element type
-    using pointer           = Edge*;                    // Pointers to elements
-    using reference         = Edge&;                    // Reference to elements
-    using difference_type   = std::ptrdiff_t;           // Signed difference
-    using iterator_category = std::input_iterator_tag;  // Weak Category, Proxy
-
-    /** Construct an invalid EdgeIterator. */
-    EdgeIterator() {
-    }
-
-    /** Constructor for EdgeIterator
-     * @param[in] graph An object of Graph
-     * @param[in] edge_index A value of size_type
-     * @return EdgeIterator that belongs to @a graph and points to the Edge that has @a edge_index in global order
-     * @pre 0 <= @a edge_index < num_edges()
+    /** Remove an edge from the graph.
+     * @param[in] n1 The valid node at one end of the edge to remove
+     * @param[in] n2 The valid node at one end of the edge to remove
+     * @return The column index on the adjacency list where the edge
+     *         is removed if has_edge(@a n1, @a n2) is true.
+     *         Otherwise, return the degree of node which has smaller
+     *         uid.
+     *
+     * @pre @a n1 and @a n2 are valid node
+     * @post new num_edges() == old num_edges() - 1
+     * @post has_edge(@a n1, @a n2) == false
+     * @post Outstanding EdgeIterators are invalidated.
+     * @post Outstanding IncidentIterators associated with @a n1 and
+     *       @a n2 are invalidated.
+     *
+     * Complexity: O(degree())
      */
-    EdgeIterator(const Graph* graph, size_type edge_index) : graph_(graph), edge_index_(edge_index) {
+    size_type remove_edge(const Node &n1, const Node &n2) {
+        if (!has_edge(n1, n2)) {
+            return (n1.uid_ < n2.uid_) ? n1.degree() : n2.degree();
+        }
+        size_type idx1 = remove_tail_node(n1, n2);
+        size_type idx2 = remove_tail_node(n2, n1);
+        return (n1.uid_ < n2.uid_) ? idx1 : idx2 ;
     }
 
-    // HW1 #5: YOUR CODE HERE
-    // Supply definitions AND SPECIFICATIONS for:
-
-     /** "Dereferences the EdgeIterator"
-      * @return Edge that this points to
-      */
-    Edge operator*() const {
-      return Edge(graph_, edge_index_, graph_->edges[edge_index_].first, graph_->edges[edge_index_].second);
+    /** Remove an edge from the graph.
+     * @param[in] e The valid edge to remove
+     * @return The column index on the adjacency list where the edge
+     *         is removed if has_edge(@a e) is true.
+     *         Otherwise, return the degree of the adjacency list that
+     *         associated with @a e.
+     *
+     * @pre @a e is valid edge
+     * @post new num_edges() == old num_edges() - 1
+     * @post has_edge(@a n1, @a n2) == false
+     * @post Outstanding EdgeIterators are invalidated.
+     * @post Outstanding IncidentIterators associated with @a e.node1() and
+     *       @a e.node2() are invalidated.
+     *
+     * Complexity: O(degree())
+     */
+    size_type remove_edge(const Edge &e) {
+        return remove_edge(e.node1(), e.node2());
     }
 
-     /** Increments the EdgeIterator to point to the next Edge (in a global sense) or the nullptr
-      * @return NodeIterator that points to exactly one of the following:
-      *                1.) if Edge global number < num_edges.size(), next Node 
-      *                2.) if Edge global number = num_edges(), nullptr 
-      */
-    EdgeIterator& operator++() {
-      edge_index_++;
-      return *this;
+    /** Remove an edge from the graph.
+     * @param[in] ei The valid EdgeIterator to remove
+     * @return The EdgeIterator pointing to the edge after the removed edge
+     *
+     * @pre @a e is valid edge
+     * @post new num_edges() == old num_edges() - 1
+     * @post has_edge(@a n1, @a n2) == false
+     * @post Outstanding EdgeIterators are invalidated.
+     * @post Outstanding IncidentIterators associated with @a (*ei).node1() and
+     *       @a (*ei).node2() are invalidated.
+     *
+     * Complexity: O(degree())
+     */
+    edge_iterator remove_edge(edge_iterator ei) {
+        Edge e = *ei;
+        size_type adj_col = remove_edge(e.node1().uid_, e.node2().uid_);
+        return EdgeIterator(this, e.node1().uid_, adj_col);
     }
 
-     /** Checks if two EdgeIterators are the same
-      * @param[in] edgeIterator An object of EdgeIterator 
-      * @return bool value true or false
-      * @post bool is true if the following are all hold, otherwise it is false
-      *         1. EdgeIterator and this belong to the same graph
-      *         2. the Edge EdgeIterator and this point to have the same edge number in a global order
-      */
-    bool operator==(const EdgeIterator& edge_iterator) const {
-      if (edge_iterator.graph_ == graph_){
-        return (edge_iterator.edge_index_ == edge_index_);
-      }
-      return false;
+    /** Remove all nodes and edges from this graph.
+     * @post num_nodes() == 0 && num_edges() == 0
+     *
+     * Invalidates all outstanding Node and Edge objects.
+     *
+     * Complexity: O(num_nodes())
+     */
+    void clear() {
+        nodes_.clear();
+        adjacency_.clear();
+        i2u_.clear();
     }
-  
 
-   private:
-    friend class Graph;
-    // HW1 #5: YOUR CODE HERE
-    const Graph* graph_;
-    size_type edge_index_;
-  };
+    //
+    // Node Iterator
+    //
 
-  // HW1 #5: YOUR CODE HERE
-  // Supply definitions AND SPECIFICATIONS for:
+    /** @class Graph::NodeIterator
+     * @brief Iterator class for nodes. A forward iterator. */
+    class NodeIterator : private totally_ordered<NodeIterator> {
+    public:
+        // These type definitions let us use STL's iterator_traits.
+        using value_type        = Node;                     // Element type
+        using pointer           = Node *;                    // Pointers to elements
+        using reference         = Node &;                    // Reference to elements
+        using difference_type   = std::ptrdiff_t;           // Signed difference
+        using iterator_category = std::input_iterator_tag;  // Weak Category, Proxy
 
-  /** returns an EdgeIterator object that points to the first Edge 
-   * @return EdgeIterator
-   * @post EdgeIterator will point to the Edge with edge number that is first in a global order in this graph if 
-   *       the this is nonempty and has at least one Edge object
-   *       otherwise it will return a nullptr
-   */
-  EdgeIterator edge_begin() const {
-    return EdgeIterator(this, 0);
+        /** Construct an invalid NodeIterator. */
+        NodeIterator() {
+        }
 
-  }
+        /** Return the node at the node iterator.
+         * @pre node_uid_ != graph_->num_nodes()
+         */
+        Node operator*() const {
+            assert(idx_ != graph_->num_nodes());
+            return graph_->node(idx_);
+        }
 
-  /** returns an EdgeIterator that indicates the end of the of edges
-   * @return EdgeIterator
-   * @post EdgeIterator is assigned nullptr only if all edges have been exhausted in a global order
-   */
-  EdgeIterator edge_end() const {
-    return EdgeIterator(this, edges.size());
+        /** Return the node iterator to the next element. */
+        NodeIterator &operator++() {
+            ++idx_;
+            return *this;
+        }
 
-  }
+        /** Test whether this node iterator and @a ni are equal.
+         *
+         * Equal node iterators have the same graph and the same node id.
+         */
+        bool operator==(const NodeIterator &ni) const {
+            return (graph_ == ni.graph_) and (idx_ == ni.idx_);
+        }
 
- private:
+    private:
+        friend class Graph;
 
-  // Use this space for your Graph class's internals:
-  //   helper functions, data members, and so forth.
-  // * @nodes is a list with the position of node @i in index i
-  //std::vector<Point> nodes;
-  std::vector<std::pair<Point,V>> nodes;
-  // * @edges is a list containing pairs of nodes for each edge.
-  //   The pair stored in position i corresponds to edge i.
-  std::vector<std::pair<size_type, size_type>> edges;
-  // * @a edge_values is a list containing the values the correspond to ith edge
-  std::vector<E> edge_values;
-  // * @adjacency is a vector containing vector with pairs. It contains
-  //   at position i the pairs of each node adjacent to node i and the
-  //   the edge id that connect node i to the adjacent node.
-  std::vector<std::vector<std::pair<size_type, size_type>>> adjacency;
+        Graph *graph_;
+        size_type idx_;
+
+        /** Valid NodeIterator constructor
+         * @pre @a graph_ != NULL
+         * @pre 0 <= @a node_uid_ < graph_->num_nodes()
+         */
+        NodeIterator(const Graph *graph, size_type idx)
+                : graph_(const_cast<Graph *>(graph)), idx_(idx) {
+            assert(graph_ != NULL);
+            assert(0 <= idx and idx_ <= graph_->num_nodes());
+        }
+
+    };
+
+    /** Return a node iterator pointing to the first element of node sequence.
+     * @return NodeIterator pointing to the first element
+     * @post If node sequence is empty, dereference is invalid for the return value.
+     *
+     * Complexity: O(1)
+     */
+    node_iterator node_begin() const {
+        return NodeIterator(this, 0);
+    }
+
+    /** Return a node iterator pointing to the past-the-end element in node sequence.
+     * @return NodeIterator pointing to the past-the-end element
+     * @post If node sequence is empty, dereference is invalid for the return value.
+     *
+     * Complexity: O(1)
+     */
+    node_iterator node_end() const {
+        return NodeIterator(this, num_nodes());
+    }
+
+    //
+    // Incident Iterator
+    //
+
+    /** @class Graph::IncidentIterator
+     * @brief Iterator class for edges incident to a node. A forward iterator. */
+    class IncidentIterator : private totally_ordered<IncidentIterator> {
+    public:
+        // These type definitions let us use STL's iterator_traits.
+        using value_type        = Edge;                     // Element type
+        using pointer           = Edge *;                    // Pointers to elements
+        using reference         = Edge &;                    // Reference to elements
+        using difference_type   = std::ptrdiff_t;           // Signed difference
+        using iterator_category = std::input_iterator_tag;  // Weak Category, Proxy
+
+        /** Construct an invalid IncidentIterator. */
+        IncidentIterator() {
+        }
+
+        /** Return the edge at the incident iterator.
+         * @pre adj_row_ != graph_->num_nodes()
+         */
+        Edge operator*() {
+            assert(adj_row_ != graph_->nodes_.size());
+            size_type node1_uid = adj_row_;
+            size_type node2_uid = graph_->adjacency_[adj_row_][adj_col_].uid2_;
+            return Edge(graph_, node1_uid, node2_uid);
+        }
+
+        /** Return the incident iterator to the next element. */
+        IncidentIterator &operator++() {
+            ++adj_col_;
+            return *this;
+        }
+
+        /** Test whether this incident iterator and @a iit are equal.
+         *
+         * Equal incident iterators have the same graph and the same row
+         * and column on the adjacency list.
+         */
+        bool operator==(const IncidentIterator &iit) const {
+            return (graph_ == iit.graph_) and (adj_row_ == iit.adj_row_) and (adj_col_ == iit.adj_col_);
+        }
+
+    private:
+        friend class Graph;
+
+        Graph *graph_;
+        size_type adj_row_;
+        size_type adj_col_;
+
+        /** Valid IncidentIterator constructor
+         * @pre @a graph_ != NULL
+         * @pre 0 <= @a adj_row_ <= graph_->num_nodes()
+         * @pre 0 <= @a adj_col_ <= graph_->adjacency_[adj_row_].size()
+         */
+        IncidentIterator(const Graph *graph, size_type adj_row, size_type adj_col)
+                : graph_(const_cast<Graph *>(graph)), adj_row_(adj_row), adj_col_(adj_col) {
+            assert(graph_ != NULL);
+            assert(0 <= adj_row_ and adj_row_ <= graph_->nodes_.size());
+            assert(0 <= adj_col_ and adj_col_ <= graph_->adjacency_[adj_row_].size());
+        }
+    };
+
+    //
+    // Edge Iterator
+    //
+
+    /** @class Graph::EdgeIterator
+     * @brief Iterator class for edges. A forward iterator. */
+    class EdgeIterator : private totally_ordered<EdgeIterator> {
+    public:
+        // These type definitions let us use STL's iterator_traits.
+        using value_type        = Edge;                     // Element type
+        using pointer           = Edge *;                    // Pointers to elements
+        using reference         = Edge &;                    // Reference to elements
+        using difference_type   = std::ptrdiff_t;           // Signed difference
+        using iterator_category = std::input_iterator_tag;  // Weak Category, Proxy
+
+        /** Construct an invalid EdgeIterator. */
+        EdgeIterator() {
+        }
+
+        /** Return the edge at the edge iterator.
+         * @pre adj_row_ != graph_->num_nodes()
+         */
+        Edge operator*() const {
+            assert(adj_row_ != graph_->nodes_.size());
+            size_type node1_uid = adj_row_;
+            size_type node2_uid = graph_->adjacency_[adj_row_][adj_col_].uid2_;
+            return Edge(graph_, node1_uid, node2_uid);
+        }
+
+        /** Return the edge iterator to the next element. */
+        EdgeIterator &operator++() {
+            ++adj_col_;
+            fix();
+            return *this;
+        }
+
+        /** Test whether this edge iterator and @a eit are equal.
+         *
+         * Equal edge iterators have the same graph and the same row
+         * and column on the adjacency list.
+         */
+        bool operator==(const EdgeIterator &eit) const {
+            return (graph_ == eit.graph_) and (adj_row_ == eit.adj_row_) and (adj_col_ == eit.adj_col_);
+        }
+
+    private:
+        friend class Graph;
+
+        Graph *graph_;
+        size_type adj_row_;
+        size_type adj_col_;
+
+        /** Valid EdgeIterator constructor
+         * @pre @a graph_ != NULL
+         * @pre 0 <= @a adj_row_ <= graph_->num_nodes()
+         * @pre 0 <= @a adj_col_ <= graph_->adjacency_[adj_row_].size()
+         * @post The iterator will start at the first valid Edge
+         */
+        EdgeIterator(const Graph *graph, size_type adj_row)
+                : graph_(const_cast<Graph *>(graph)), adj_row_(adj_row), adj_col_(0) {
+            assert(graph_ != NULL);
+            assert(0 <= adj_row_ and adj_row_ <= graph_->nodes_.size());
+            assert(0 <= adj_col_ and adj_col_ <= graph_->adjacency_[adj_row_].size());
+            fix();
+        }
+
+        EdgeIterator(const Graph *graph, size_type adj_row, size_type adj_col)
+                : graph_(const_cast<Graph *>(graph)), adj_row_(adj_row), adj_col_(adj_col) {
+            assert(graph_ != NULL);
+            assert(0 <= adj_row_ and adj_row_ <= graph_->nodes_.size());
+            assert(0 <= adj_col_ and adj_col_ <= graph_->adjacency_[adj_row_].size());
+            fix();
+        }
+
+        /** Move the edge iterator to the next valid element.
+         *  (Amy helped me with this. Thanks Amy!)
+         */
+        void fix() {
+            /* Move the row index of adjacency list */
+            while (adj_row_ < graph_->adjacency_.size()) {
+                /* Move the column index of adjacency list */
+                while (adj_col_ < graph_->adjacency_[adj_row_].size()) {
+                    /* Edge is valid if node1_uid < node2_uid */
+                    size_type node1_uid = adj_row_;
+                    size_type node2_uid = graph_->adjacency_[adj_row_][adj_col_].uid2_;
+                    if (node1_uid < node2_uid) {
+                        return;
+                    }
+                    ++adj_col_;
+                }
+                ++adj_row_;
+                adj_col_ = 0;
+            }
+            return;
+        }
+
+    };
+
+    /** Return an edge iterator pointing to the first element of edge sequence.
+     * @return EdgeIterator pointing to the first element
+     * @post If edge sequence is empty, dereference is invalid for the return value.
+     *
+     * Complexity: O(1)
+     */
+    edge_iterator edge_begin() const {
+        return EdgeIterator(this, 0);
+    }
+
+    /** Return an edge iterator pointing to the past-the-end element in edge sequence.
+     * @return EdgeIterator pointing to the past-the-end element
+     * @post If edge sequence is empty, dereference is invalid for the return value.
+     *
+     * Complexity: O(1)
+     */
+    edge_iterator edge_end() const {
+        return EdgeIterator(this, adjacency_.size());
+    }
+
+private:
+
+    /** Erase the giver index from the vector
+     *  @param[in] v The vector to delete the element from
+     *  @param[in] i The index of the element to delete
+     *
+     *  The element at @a i is replaced with the last
+     *  element in the vector.
+     *
+     *  Complexity: O(1)
+     */
+    template<typename T>
+    void erase(std::vector <T> &v, unsigned int i) {
+        v[i] = v.back();
+        v.pop_back();
+    }
+
+    /** Find the adjacent node of head node that have matching
+     *  uid with tail node
+     *  @param[in] head The valid node that the function will
+     *                  access its adjacency list
+     *  @param[in] tail The valid node to find
+     *  @return The column index on the adjacency list where the
+     *          tail node is located, if the tail node is found.
+     *          Otherwise, return the degree.
+     *
+     *  @pre @a head and @a tail are valid nodes.
+     *
+     *  Complexity: O(degree())
+     */
+    size_type match_tail_node(const Node &head, const Node &tail) const {
+        size_type match_uid = tail.uid_;
+        auto is_match = [&match_uid](Edge e) { return e.node2().uid_ == match_uid; };
+        IncidentIterator iit = std::find_if(head.edge_begin(), head.edge_end(), is_match);
+        return std::distance(head.edge_begin(), iit);
+    }
+
+    /** Remove the adjacent node of head node that have matching
+    *  uid with tail node
+    *  @param[in] head The valid node that the function will
+    *                  access its adjacency list
+    *  @param[in] tail The valid node to remove
+    *  @return The column index on the adjacency list where the
+    *          node is deleted, if the tail node is found.
+    *          Otherwise, return the degree.
+    *
+    *  Complexity: O(degree())
+    */
+    size_type remove_tail_node(const Node &head, const Node &tail) {
+        size_type index = match_tail_node(head, tail);
+        if (index != head.degree()) {
+            erase(adjacency_[head.uid_], index);
+        }
+        return index;
+    }
+
+    /** Structure representing node information */
+    struct node_info {
+        size_type idx_;
+        Point position_;
+        node_value_type value_;
+
+        node_info(size_type idx, const Point& position, const node_value_type& value)
+                :idx_(idx), position_(position), value_(value){
+
+        }
+    };
+    /** Structure representing edge information */
+    struct edge_info {
+        size_type uid2_;
+        edge_value_type value_;
+
+        edge_info(size_type uid2, const edge_value_type& value)
+        :uid2_(uid2), value_(value){
+
+        }
+    };
+
+    std::vector <node_info> nodes_;
+    std::vector <uid_type> i2u_;
+    std::vector <std::vector<edge_info>> adjacency_;
+
 };
 
 #endif // CME212_GRAPH_HPP
+

@@ -183,7 +183,7 @@ struct PlaneConstraint {
   //template<typename GRAPH>
   void operator()(GraphType& graph, double t){
 	(void) t;
-	std::cout << "plane constraint" << std::endl;
+	//std::cout << "plane constraint" << std::endl;
   	for (auto it = graph.node_begin(); it != graph.node_end(); ++it){
 		auto n = *it;
 		if (dot(n.position(), Point(0,0,1)) < -0.75){
@@ -196,18 +196,21 @@ struct PlaneConstraint {
 
 struct SphereConstraint1 {
   //template<typename GRAPH>
+  double radius = 0.15;
+  Point sphere_center = Point(0.5,0.5,-0.5);
   void operator()(GraphType& graph, double t){
 	(void) t;
-	std::cout << "sphere constraint 1" << std::endl;
-	double radius = 0.15;
-	Point sphere_center = Point(0.5,0.5,-0.5);
 	for (auto it = graph.node_begin(); it != graph.node_end(); ++it){
 		auto n = *it;
-		Point diff = n.position() - sphere_center;
-		Point R = (diff / norm( diff ));
-		if ( norm( diff ) < radius ) {
-			n.position() = R*radius;
-			n.value().vel = n.value().vel - dot(n.value().vel,R)*R;
+		Point dist = n.position() - sphere_center;
+		double dis = norm(dist);
+		if (dis == 0){
+			n.position() = n.position() + Point(0,0,0.15);
+			n.value().vel.z = 0;
+		}
+		else if (dis < radius) {
+			n.position() = sphere_center + (dist*(radius/dis));
+			n.value().vel = n.value().vel - dot(n.value().vel, dist/dis)*(dist/dis);
 		}
 	}
   }
@@ -217,7 +220,7 @@ struct SphereConstraint2 {
   //template<typename GRAPH>
   void operator()(GraphType& graph, double t){
     (void) t;
-    std::cout << "sphere constraint 2" << std::endl;
+    //std::cout << "sphere constraint 2" << std::endl;
     double radius = 0.15;
     Point sphere_center = Point(0.5,0.5,-0.5);
     for (auto it = graph.node_begin(); it != graph.node_end(); ++it){
@@ -230,22 +233,27 @@ struct SphereConstraint2 {
   }
 };
 
-template <typename Constraint1, typename Constraint2, typename Constraint3>
+template <typename Constraint1, typename Constraint2>//, typename Constraint3>
 struct CombinedConstraints {
   Constraint1 c1;
   Constraint2 c2;
-  Constraint3 c3;
+  //Constraint3 c3;
 
   void operator()(GraphType& graph, double t){
     c1(graph,t);
     c2(graph,t);
-    c3(graph,t);
+    //c3(graph,t);
   }
 };
 
+template<typename Constraint1, typename Constraint2>//, typename Constraint3>
+CombinedConstraints<Constraint1, Constraint2> make_combined_constraints(Constraint1 c1, Constraint2 c2){
+ return {c1,c2};
+}
+
 template<typename Constraint1, typename Constraint2, typename Constraint3>
-CombinedConstraints<Constraint1, Constraint2, Constraint3> make_combined_constraints(Constraint1 c1, Constraint2 c2, Constraint3 c3){
- return {c1,c2, c3};
+CombinedConstraints<CombinedConstraints<Constraint1, Constraint2>, Constraint3> make_combined_constraints(Constraint1 c1, Constraint2 c2, Constraint3 c3){
+ return make_combined_constraints(make_combined_constraints(c1,c2), c3);
 }
 
 
@@ -304,7 +312,7 @@ int main(int argc, char** argv)
   SphereConstraint1 constraint2;
   SphereConstraint2 constraint3;
 
-  auto all_constraints = make_combined_constraints(constraint1, constraint3, constraint2);
+  auto all_constraints = make_combined_constraints(constraint1, constraint2, constraint3);
   
 
   // Print out the stats
@@ -359,3 +367,4 @@ int main(int argc, char** argv)
 
   return 0;
 }
+
