@@ -17,7 +17,7 @@
 
 class IdentityMatrix {
   public:
-  	IdentityMatrix(std::size_t nrows, std::size_t ncols) : nrows_(nrows), ncols_(ncols) {}
+  	IdentityMatrix(std::size_t m_, std::size_t n_) : m_(m), n_(n) {}
 
 	/** Compute the product of a vector with this identity matrix
 	 */
@@ -28,15 +28,15 @@ class IdentityMatrix {
 
 	/** The numner of elements in the matrix. */
 	inline std::size_t size(const IdentityMatrix& A){
-		return nrows_*ncols_;
+		return n_*m_;
 	}
 	/** The numbner of rows in the matrix. */
 	inline std::size_t num_rows(const IdentityMatrix& A){
-		return nrows_;
+		return m_;
 	}
 	/** The number of columns in the matrix. */
 	inline std::size_t num_cols(const IdentityMatrix& A){
-		return ncols_;
+		return n_;
 	}
 
 	/** Helper function to perfom multiplication. Allows for delayed 
@@ -57,11 +57,10 @@ class IdentityMatrix {
 		return {*this, v};
 	}
 
-
   private:
   	// Empty
-  	std::size_t nrows_;
-  	std::size_t ncols_;
+  	std::size_t m_;
+  	std::size_t n_;
 
 };
 
@@ -86,13 +85,34 @@ struct Collection<IdentityMatrix> {
 } // end namespace
 
 
-
+using namespace mtl;
+using namespace itl;
 
 int main()
 {
   // HW3: YOUR CODE HERE
   // Construct an IdentityMatrix and "solve" Ix = b
   // using MTL's conjugate gradient solver
+	const int size = 40, N = size*size;
+	IdentityMatrix I(N,N);
+
+    // Create an ILU(0) preconditioner
+    pc::identity<IdentityMatrix>        P(I);
+
+    // Set b such that x == 1 is solution; start with x == 0
+    dense_vector<double>          x(N, 1.0), b(N);
+    b= A * x; x= 0;
+
+    // Termination criterion: r < 1e-6 * b or N iterations
+    //noisy_iteration<double>       iter(b, 500, 1.e-6);
+    cyclic_iteration<double> iter(b, 100, 1.e-10, 0, 100);
+
+    // Solve Ax == b with left preconditioner P
+    cg(I, x, b, P, iter);
+
+
+
+
 
   return 0;
 }
