@@ -20,7 +20,6 @@
 
 #include "Graph.hpp"
 
-
 // HW3: YOUR CODE HERE
 // Define a GraphSymmetricMatrix that maps
 // your Graph concept to MTL's Matrix concept. This shouldn't need to copy or
@@ -37,7 +36,13 @@ using NodeType  = typename GraphType::node_type;
 void remove_box(GraphType& g, const Box3D& bb) {
   // HW3: YOUR CODE HERE
   (void) g; (void) bb;   //< Quiet compiler
-  return;
+  for (auto it = g.node_begin(); it != g.node_end(); ++it){
+    auto n = *it;
+    if bb.constains(n.position()){
+      g.remove_node(n);
+    }
+  }
+  //return;
 }
 
 
@@ -90,6 +95,7 @@ int main(int argc, char** argv)
   // Define b using the graph, f, and g.
   // Construct the GraphSymmetricMatrix A using the graph
   // Solve Au = b using MTL.
+
 
   return 0;
 }
