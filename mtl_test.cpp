@@ -17,25 +17,20 @@
 
 class IdentityMatrix {
   public:
-  	IdentityMatrix(std::size_t m_, std::size_t n_) : m_(m), n_(n) {}
+  	IdentityMatrix(std::size_t n) : n_(n) {}
 
 	/** Compute the product of a vector with this identity matrix
 	 */
+
+	/**	
 	template <typename Vector>
 	Vector operator*(const Vector& x) const {
 		return x;
 	}
+	*/
 
-	/** The numner of elements in the matrix. */
-	inline std::size_t size(const IdentityMatrix& A){
-		return n_*m_;
-	}
-	/** The numbner of rows in the matrix. */
-	inline std::size_t num_rows(const IdentityMatrix& A){
-		return m_;
-	}
-	/** The number of columns in the matrix. */
-	inline std::size_t num_cols(const IdentityMatrix& A){
+	/** Get the dimension of the matrix */
+	std::size_t get_dim() const{
 		return n_;
 	}
 
@@ -47,7 +42,9 @@ class IdentityMatrix {
 	template <typename VectorIn, typename VectorOut, typename Assign>
 	void mult (const VectorIn& v, VectorOut& w, Assign) const {
 	    assert(size(v) == size(w));
-	    Assign::apply(w,v);
+	    for (unsigned int i = 0; i < size(w); i++){
+		Assign::apply(w[i],v[i]);
+	    }
 	}
 
 	/** Matvec forward to MTL's lazy mat_cvec_multiplier oeprator */
@@ -59,10 +56,22 @@ class IdentityMatrix {
 
   private:
   	// Empty
-  	std::size_t m_;
   	std::size_t n_;
 
 };
+
+inline std::size_t size(const IdentityMatrix& A){
+	return A.get_dim()*A.get_dim();
+}
+
+inline std::size_t num_rows(const IdentityMatrix& A){
+	return A.get_dim();
+}
+
+inline std::size_t num_cols(const IdentityMatrix& A){
+	return A.get_dim();
+}
+
 
 /** Traits that MTL used to detmerine propperties of our IdentityMatrix. */
 namespace mtl {
@@ -90,18 +99,18 @@ using namespace itl;
 
 int main()
 {
-  // HW3: YOUR CODE HERE
-  // Construct an IdentityMatrix and "solve" Ix = b
-  // using MTL's conjugate gradient solver
-	const int size = 40, N = size*size;
-	IdentityMatrix I(N,N);
+    // HW3: YOUR CODE HERE
+    // Construct an IdentityMatrix and "solve" Ix = b
+    // using MTL's conjugate gradient solver
+    std::size_t size = 40, N = size*size;
+    IdentityMatrix I(N);
 
     // Create an ILU(0) preconditioner
     pc::identity<IdentityMatrix>        P(I);
 
     // Set b such that x == 1 is solution; start with x == 0
     dense_vector<double>          x(N, 1.0), b(N);
-    b= A * x; x= 0;
+    b= I * x; x= 0;
 
     // Termination criterion: r < 1e-6 * b or N iterations
     //noisy_iteration<double>       iter(b, 500, 1.e-6);
@@ -109,6 +118,7 @@ int main()
 
     // Solve Ax == b with left preconditioner P
     cg(I, x, b, P, iter);
+std::cout << x << std::endl;
 
 
 

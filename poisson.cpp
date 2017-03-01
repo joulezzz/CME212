@@ -45,6 +45,8 @@ void remove_box(GraphType& g, const Box3D& bb) {
   //return;
 }
 
+class GraphSymetricMatrix{
+}
 
 
 int main(int argc, char** argv)
