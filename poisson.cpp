@@ -12,12 +12,17 @@
  */
 
 #include <fstream>
+#include <boost/numeric/mtl/mtl.hpp>
+#include <boost/numeric/itl/itl.hpp>
+#include <cassert>
 
 #include "CME212/SFML_Viewer.hpp"
 #include "CME212/Util.hpp"
 #include "CME212/Point.hpp"
 #include "CME212/BoundingBox.hpp"
 #include <math.h>
+
+
 
 #include "Graph.hpp"
 
@@ -39,14 +44,60 @@ void remove_box(GraphType& g, const Box3D& bb) {
   (void) g; (void) bb;   //< Quiet compiler
   for (auto it = g.node_begin(); it != g.node_end(); ++it){
     auto n = *it;
-    if bb.contains(n.position()){
+    if (bb.contains(n.position())){
       g.remove_node(n);
     }
   }
   //return;
 }
 
-class GraphSymetricMatrix{
+
+/** g(x), boundary conditions */
+double g_BCs(const NodeType n){
+  // first check if on boundary
+  CME212::BoundingBox<Point> thisbox = Box3D(Point(-0.6,-0.2,-1), Point( 0.6, 0.2,1));
+  if (norm_inf(n.position()) == 1){
+    return 0;
+  }
+  else if ( (norm_inf(n.position() - Point(0.6,0.6,0)) < 0.2) || (norm_inf(n.position() - Point(-0.6,0.6,0)) < 0.2) || (norm_inf(n.position() - Point(0.6,-0.6,0)) < 0.2) || (norm_inf(n.position() - Point(-0.6,-0.6,0)) < 0.2) ){
+    return -0.2;
+  }
+  else if ( thisbox.contains(n.position()) ) {
+    return 1;
+  }
+  // if not on boundary then use forcing function
+  else {
+    return -1;
+  }
+}
+
+/** f(x), forcing function */
+double forcing_function(const NodeType& n){
+  return 5.0*cos( norm_1(n.position()) );
+}
+
+/** b, RHS of system Ax = b */
+double b(const NodeType& i, const GraphType& graph){
+	double gofx_i = g_BCs(i);
+	if (gofx_i != double(-1)){
+		return gofx_i;
+	}
+	else if (gofx_i == double(-1)){
+		double sum = 0;
+		for (auto eit = i.edge_begin(); eit != i.edge_end(); ++eit){
+			auto j = (*eit).node2();
+			double gofx_j = g_BCs(j);
+			if (gofx_j != double(-1)){
+				sum += gofx_j;
+			}
+		}
+		return pow(graph.edge(0).length(),2)*forcing_function(i) + sum;
+	}
+}
+
+
+
+class GraphSymmetricMatrix{
   public:
     GraphSymmetricMatrix(GraphType& g) : g_(g) {}
 
@@ -56,7 +107,7 @@ class GraphSymetricMatrix{
   }
 
   // L(i,j), Discrete Matrix Approximating Laplace Operator
-  int L(NodeType i, NodeType j){
+  double L(NodeType i, NodeType j) const{
     if (i == j){
       return -i.degree();
     }
@@ -69,11 +120,11 @@ class GraphSymetricMatrix{
   }
 
   // A(i,j), Linear System of Equations
-  int A(NodeType i, NodeType j){
-    if (i == j) && (g_BCs(i) != -1){
+  double A(NodeType i, NodeType j) const {
+    if ( (i == j) && (g_BCs(i) != -1) ){
       return 1;
     }
-    else if (i != j) && ( (g_BCs(i) != -1) || (g_BCs(j) != -1) ){
+    else if ( (i != j) && ( (g_BCs(i) != -1) || (g_BCs(j) != -1) ) ){
       return 0;
     }
     else {
@@ -92,9 +143,9 @@ class GraphSymetricMatrix{
       double temp = 0;
       for (auto nit = g_.node_begin(); nit != g_.node_end(); ++nit){
         auto i = *nit;
-        for (auto eit = i.edge_begin; eit != i.edge_end(); ++eit){
-          e = *eit;
-          j = e.node2();
+        for (auto eit = i.edge_begin(); eit != i.edge_end(); ++eit){
+          auto e = *eit;
+          auto j = e.node2();
           temp += A(i,j)*v[j.index()];
         }
         Assign::apply(w[i.index()], temp);
@@ -103,10 +154,11 @@ class GraphSymetricMatrix{
 
   /** Matvec forward to MTL's lazy mat_cvec_multiplier oeprator */
   template <typename Vector> 
-  mtl::vec::mat_cvec_multiplier<IdentityMatrix, Vector>
+  mtl::vec::mat_cvec_multiplier<GraphSymmetricMatrix, Vector>
   operator*(const Vector& v) const {
     return {*this, v};
   }
+
 
   private:
     // Empty
@@ -117,43 +169,20 @@ class GraphSymetricMatrix{
 
 
 
-inline std::size_t size(const SymmetricsMatrix& M){
+inline std::size_t size(const GraphSymmetricMatrix& M){
   return M.get_dim()*M.get_dim();
 }
 
-inline std::size_t num_rows(const SymmetricMatrix& M){
+inline std::size_t num_rows(const GraphSymmetricMatrix& M){
   return M.get_dim();
 }
 
-inline std::size_t num_cols(const SymmetricMatrix& M){
+inline std::size_t num_cols(const GraphSymmetricMatrix& M){
   return M.get_dim();
 }
 
 
 
-/** boundary conditions g(x) */
-int g_BCs(const NodeType n){
-  // first check if on boundary
-  BoundingBox thisbox = Box3D(Point(-0.6,-0.2,-1), Point( 0.6, 0.2,1));
-  if (norm_inf(n.position()) == 1){
-    return 0;
-  }
-  else if (norm_inf(n.position() - Point(0.6,0.6,0)) < 0.2) || (norm_inf(n.position() - Point(-0.6,0.6,0)) < 0.2) || (norm_inf(n.position() - Point(0.6,-0.6,0)) < 0.2) || (norm_inf(n.position() - Point(-0.6,-0.6,0)) < 0.2){
-    return -0.2;
-  }
-  else if thisbox.contains(n.position()) {
-    return 1;
-  }
-  // if not on boundary then use forcing function
-  else {
-    return -1;
-  }
-}
-
-/** forcing function */
-int forcing_function(NodeType n){
-  return 5*cos( norm_1(x.position()) );
-}
 
 
 
