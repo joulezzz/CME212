@@ -60,7 +60,7 @@ class GraphSymetricMatrix{
     if (i == j){
       return -i.degree();
     }
-    else if ( g_.has_edge(i,j) ) {
+    else if ( g_.has_edge(i,j) || g_.has_edge(j,i) ) {
       return 1;
     }
     else {
@@ -89,8 +89,15 @@ class GraphSymetricMatrix{
   template <typename VectorIn, typename VectorOut, typename Assign>
   void mult (const VectorIn& v, VectorOut& w, Assign) const {
       assert(size(v) == size(w));
-      for (unsigned int i = 0; i < size(w); i++){
-        Assign::apply(w[i],v[i]);
+      double temp = 0;
+      for (auto nit = g_.node_begin(); nit != g_.node_end(); ++nit){
+        auto i = *nit;
+        for (auto eit = i.edge_begin; eit != i.edge_end(); ++eit){
+          e = *eit;
+          j = e.node2();
+          temp += A(i,j)*v[j.index()];
+        }
+        Assign::apply(w[i.index()], temp);
       }
   }
 
@@ -110,16 +117,16 @@ class GraphSymetricMatrix{
 
 
 
-inline std::size_t size(const SymmetricsMatrix& A){
-  return A.get_dim()*A.get_dim();
+inline std::size_t size(const SymmetricsMatrix& M){
+  return M.get_dim()*M.get_dim();
 }
 
-inline std::size_t num_rows(const SymmetricMatrix& A){
-  return A.get_dim();
+inline std::size_t num_rows(const SymmetricMatrix& M){
+  return M.get_dim();
 }
 
-inline std::size_t num_cols(const SymmetricMatrix& A){
-  return A.get_dim();
+inline std::size_t num_cols(const SymmetricMatrix& M){
+  return M.get_dim();
 }
 
 
