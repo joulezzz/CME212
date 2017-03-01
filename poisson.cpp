@@ -17,6 +17,7 @@
 #include "CME212/Util.hpp"
 #include "CME212/Point.hpp"
 #include "CME212/BoundingBox.hpp"
+#include <math.h>
 
 #include "Graph.hpp"
 
@@ -38,7 +39,7 @@ void remove_box(GraphType& g, const Box3D& bb) {
   (void) g; (void) bb;   //< Quiet compiler
   for (auto it = g.node_begin(); it != g.node_end(); ++it){
     auto n = *it;
-    if bb.constains(n.position()){
+    if bb.contains(n.position()){
       g.remove_node(n);
     }
   }
@@ -46,7 +47,109 @@ void remove_box(GraphType& g, const Box3D& bb) {
 }
 
 class GraphSymetricMatrix{
+  public:
+    GraphSymmetricMatrix(GraphType& g) : g_(g) {}
+
+  /** Get the dimension of the matrix */
+  std::size_t get_dim() const{
+    return g_.num_nodes();
+  }
+
+  // L(i,j), Discrete Matrix Approximating Laplace Operator
+  int L(NodeType i, NodeType j){
+    if (i == j){
+      return -i.degree();
+    }
+    else if ( g_.has_edge(i,j) ) {
+      return 1;
+    }
+    else {
+      return 0;
+    }
+  }
+
+  // A(i,j), Linear System of Equations
+  int A(NodeType i, NodeType j){
+    if (i == j) && (g_BCs(i) != -1){
+      return 1;
+    }
+    else if (i != j) && ( (g_BCs(i) != -1) || (g_BCs(j) != -1) ){
+      return 0;
+    }
+    else {
+      return L(i,j);
+    }
+  }
+
+  /** Helper function to perfom multiplication. Allows for delayed 
+   *  evaluation of results.
+   *  Assign :: apply(a, b) resolves to an assignment operation such as 
+   *     a += b, a -= b, or a = b.
+   *  @pre @a size(v) == size(w) */
+  template <typename VectorIn, typename VectorOut, typename Assign>
+  void mult (const VectorIn& v, VectorOut& w, Assign) const {
+      assert(size(v) == size(w));
+      for (unsigned int i = 0; i < size(w); i++){
+        Assign::apply(w[i],v[i]);
+      }
+  }
+
+  /** Matvec forward to MTL's lazy mat_cvec_multiplier oeprator */
+  template <typename Vector> 
+  mtl::vec::mat_cvec_multiplier<IdentityMatrix, Vector>
+  operator*(const Vector& v) const {
+    return {*this, v};
+  }
+
+  private:
+    // Empty
+    GraphType& g_;
+    // g_.num_nodes() is our n_
+
+};
+
+
+
+inline std::size_t size(const SymmetricsMatrix& A){
+  return A.get_dim()*A.get_dim();
 }
+
+inline std::size_t num_rows(const SymmetricMatrix& A){
+  return A.get_dim();
+}
+
+inline std::size_t num_cols(const SymmetricMatrix& A){
+  return A.get_dim();
+}
+
+
+
+/** boundary conditions g(x) */
+int g_BCs(const NodeType n){
+  // first check if on boundary
+  BoundingBox thisbox = Box3D(Point(-0.6,-0.2,-1), Point( 0.6, 0.2,1));
+  if (norm_inf(n.position()) == 1){
+    return 0;
+  }
+  else if (norm_inf(n.position() - Point(0.6,0.6,0)) < 0.2) || (norm_inf(n.position() - Point(-0.6,0.6,0)) < 0.2) || (norm_inf(n.position() - Point(0.6,-0.6,0)) < 0.2) || (norm_inf(n.position() - Point(-0.6,-0.6,0)) < 0.2){
+    return -0.2;
+  }
+  else if thisbox.contains(n.position()) {
+    return 1;
+  }
+  // if not on boundary then use forcing function
+  else {
+    return -1;
+  }
+}
+
+/** forcing function */
+int forcing_function(NodeType n){
+  return 5*cos( norm_1(x.position()) );
+}
+
+
+
 
 
 int main(int argc, char** argv)
