@@ -271,6 +271,19 @@ int main(int argc, char** argv)
   // Solve Ax == b with left preconditioner P
   itl::cg(A, x_soln, b_RHS, P, iter);
 
+  struct ColorFn {
+    // operator
+    CME212::Color operator () (NodeType n){
+      return CME212::Color::make_heat(1.0 - (float(n.value())/normalizer_) );
+    }
+    // Constructor
+    ColorFn(int normalizer) : normalizer_(normalizer){};
+   private :
+    const int normalizer_;
+  };
+
+  viewer.add_nodes( graph.node_begin() , graph.node_end() , ColorFn(longest_path) , node_map );
+  viewer.add_edges( graph.edge_begin() , graph.edge_end(), node_map );
 
   return 0;
 }
