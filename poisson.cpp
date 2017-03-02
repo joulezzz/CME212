@@ -91,7 +91,7 @@ double b(const NodeType& i, const GraphType& graph){
 				sum += gofx_j;
 			}
 		}
-		return pow(graph.edge(0).length(),2)*f(i) + sum;
+		return pow(graph.edge(0).length(),2)*f(i) - sum;
 	}
 }
 
@@ -108,7 +108,7 @@ class GraphSymmetricMatrix{
   // L(i,j), Discrete Matrix Approximating Laplace Operator
   double L(NodeType i, NodeType j) const{
     if (i == j){
-      return -i.degree();
+      return -1*int(i.degree());
     }
     else if ( g_.has_edge(i,j) || g_.has_edge(j,i) ) {
       return 1;
@@ -200,6 +200,31 @@ struct Collection<GraphSymmetricMatrix> {
 };
 } // end namespace
 
+ // Functor that colors the plot in an interesting way
+  struct ColorFn {
+    // operator
+    CME212::Color operator () (NodeType n){
+      return CME212::Color::make_heat(1.0 - (float(n.value())/normalizer_) );
+    }
+    // Constructor
+    ColorFn(int normalizer) : normalizer_(normalizer){};
+   private :
+    const int normalizer_;
+  };
+
+  // Functor that changes how nodes are plotted, so soln can be viewed on z-axis
+  struct NodePosition {
+    // Constructor 
+    NodePosition(mtl::dense_vector<double>& x) : x_(x) {}
+    // operator
+    Point operator () (NodeType n){
+		//n.position().z = x_[n.index()];
+	return n.position(); //n.position();
+    }
+   private:
+     mtl::dense_vector<double> x_;
+  };
+
 int main(int argc, char** argv)
 {
   // Check arguments
@@ -263,27 +288,25 @@ int main(int argc, char** argv)
   } 
 
   // Set x, Initial Guess
-  mtl::dense_vector<double> x_soln(graph.num_nodes(), 1.0);
+  mtl::dense_vector<double> x_soln(graph.num_nodes(), 0.0);
 
   // cyclic_iteration
-  itl::cyclic_iteration<double> iter(b_RHS, 100, 1.e-10, 0, 100);
+  itl::cyclic_iteration<double> iter(b_RHS, 100, 1.e-10, 0, 10);
 
   // Solve Ax == b with left preconditioner P
   itl::cg(A, x_soln, b_RHS, P, iter);
 
-  struct ColorFn {
-    // operator
-    CME212::Color operator () (NodeType n){
-      return CME212::Color::make_heat(1.0 - (float(n.value())/normalizer_) );
-    }
-    // Constructor
-    ColorFn(int normalizer) : normalizer_(normalizer){};
-   private :
-    const int normalizer_;
-  };
+  // Launch the SFML Viewer
+  CME212::SFML_Viewer viewer;
+  auto node_map = viewer.empty_node_map(graph);
 
-  viewer.add_nodes( graph.node_begin() , graph.node_end() , ColorFn(longest_path) , node_map );
+ 
+
+  viewer.add_nodes( graph.node_begin() , graph.node_end() , ColorFn(25.0) , NodePosition(x_soln), node_map );
   viewer.add_edges( graph.edge_begin() , graph.edge_end(), node_map );
+
+viewer.center_view();
+viewer.event_loop();
 
   return 0;
 }
