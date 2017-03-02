@@ -42,10 +42,13 @@ using NodeType  = typename GraphType::node_type;
 void remove_box(GraphType& g, const Box3D& bb) {
   // HW3: YOUR CODE HERE
   (void) g; (void) bb;   //< Quiet compiler
-  for (auto it = g.node_begin(); it != g.node_end(); ++it){
+  for (auto it = g.node_begin(); it != g.node_end();){
     auto n = *it;
     if (bb.contains(n.position())){
       g.remove_node(n);
+    }
+    else {
+      ++it;
     }
   }
   //return;
@@ -57,17 +60,17 @@ double g_boundary(const NodeType n){
   // first check if on boundary
   CME212::BoundingBox<Point> thisbox = Box3D(Point(-0.6,-0.2,-1), Point( 0.6, 0.2,1));
   if (norm_inf(n.position()) == 1){
-    return 0;
+    return 0.0;
   }
   else if ( (norm_inf(n.position() - Point(0.6,0.6,0)) < 0.2) || (norm_inf(n.position() - Point(-0.6,0.6,0)) < 0.2) || (norm_inf(n.position() - Point(0.6,-0.6,0)) < 0.2) || (norm_inf(n.position() - Point(-0.6,-0.6,0)) < 0.2) ){
     return -0.2;
   }
   else if ( thisbox.contains(n.position()) ) {
-    return 1;
+    return 1.0;
   }
   // if not on boundary then use forcing function
   else {
-    return -1;
+    return -1.0;
   }
 }
 
@@ -91,7 +94,8 @@ double b(const NodeType& i, const GraphType& graph){
 				sum += gofx_j;
 			}
 		}
-		return pow(graph.edge(0).length(),2)*f(i) - sum;
+		//std::cout << graph.edge(0).length() << std::endl;
+		return pow( double(graph.edge(0).length()) ,2)*f(i) - sum;
 	}
 }
 
@@ -108,23 +112,24 @@ class GraphSymmetricMatrix{
   // L(i,j), Discrete Matrix Approximating Laplace Operator
   double L(NodeType i, NodeType j) const{
     if (i == j){
-      return -1*int(i.degree());
+      //std::cout << i.degree() << std::endl;
+      return double(-1*int(i.degree()));
     }
     else if ( g_.has_edge(i,j) || g_.has_edge(j,i) ) {
-      return 1;
+      return double(1);
     }
     else {
-      return 0;
+      return double(0);
     }
   }
 
   // A(i,j), Linear System of Equations
   double A(NodeType i, NodeType j) const {
     if ( (i == j) && (g_boundary(i) != -1) ){
-      return 1;
+      return double(1);
     }
     else if ( (i != j) && ( (g_boundary(i) != -1) || (g_boundary(j) != -1) ) ){
-      return 0;
+      return double(0);
     }
     else {
       return L(i,j);
@@ -139,12 +144,13 @@ class GraphSymmetricMatrix{
   template <typename VectorIn, typename VectorOut, typename Assign>
   void mult (const VectorIn& v, VectorOut& w, Assign) const {
       assert(size(v) == size(w));
-      double temp = 0;
+      
       for (auto nit = g_.node_begin(); nit != g_.node_end(); ++nit){
         auto i = *nit;
-        for (auto eit = i.edge_begin(); eit != i.edge_end(); ++eit){
-          auto e = *eit;
-          auto j = e.node2();
+	double temp = 0.0;
+        for(auto njt = g_.node_begin(); njt != g_.node_end(); ++njt){
+          auto j = *njt;
+          //auto j = e.node2();
           temp += A(i,j)*v[j.index()];
         }
         Assign::apply(w[i.index()], temp);
@@ -160,10 +166,7 @@ class GraphSymmetricMatrix{
 
 
   private:
-    // Empty
-    GraphType& g_;
-    // g_.num_nodes() is our n_
-
+    GraphType& g_;    
 };
 
 
@@ -218,7 +221,7 @@ struct Collection<GraphSymmetricMatrix> {
     NodePosition(mtl::dense_vector<double>& x) : x_(x) {}
     // operator
     Point operator () (NodeType n){
-		//n.position().z = x_[n.index()];
+		 n.position().z = x_[n.index()];
 	return n.position(); //n.position();
     }
    private:
@@ -276,6 +279,15 @@ int main(int argc, char** argv)
 
   // Construct the GraphSymmetricMatrix A using the graph
   GraphSymmetricMatrix A(graph);
+ /**
+ for (unsigned int i = 0; i < graph.num_nodes(); ++i){
+	for (unsigned int j = 0; j < graph.num_nodes(); ++j){
+		std::cout << A.A(graph.node(i),graph.node(j)) << " ";
+	}
+	std::cout << std::endl;
+  }
+  */
+	
 
   // Create an ILU(0) preconditioner
   itl::pc::identity<GraphSymmetricMatrix>        P(A);
@@ -287,15 +299,13 @@ int main(int argc, char** argv)
     b_RHS[i.index()] = b(i, graph);
   } 
 
+
   // Set x, Initial Guess
   mtl::dense_vector<double> x_soln(graph.num_nodes(), 0.0);
-
   // cyclic_iteration
-  itl::cyclic_iteration<double> iter(b_RHS, 100, 1.e-10, 0, 10);
-
+  itl::cyclic_iteration<double> iter(b_RHS, 300, 1.e-10, 0.0, 50);
   // Solve Ax == b with left preconditioner P
   itl::cg(A, x_soln, b_RHS, P, iter);
-
   // Launch the SFML Viewer
   CME212::SFML_Viewer viewer;
   auto node_map = viewer.empty_node_map(graph);
