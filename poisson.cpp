@@ -82,7 +82,7 @@ double b(const NodeType& i, const GraphType& graph){
 	if (gofx_i != double(-1)){
 		return gofx_i;
 	}
-	else if (gofx_i == double(-1)){
+	else {
 		double sum = 0;
 		for (auto eit = i.edge_begin(); eit != i.edge_end(); ++eit){
 			auto j = (*eit).node2();
@@ -100,11 +100,6 @@ double b(const NodeType& i, const GraphType& graph){
 class GraphSymmetricMatrix{
   public:
     GraphSymmetricMatrix(GraphType& g) : g_(g) {}
-
-  /** Get the dimension of the matrix */
-  std::size_t get_dim() const{
-    return g_.num_nodes();
-  }
 
   // L(i,j), Discrete Matrix Approximating Laplace Operator
   double L(NodeType i, NodeType j) const{
@@ -169,21 +164,6 @@ class GraphSymmetricMatrix{
 
 
 
-inline std::size_t size(const GraphSymmetricMatrix& M){
-  return M.get_dim()*M.get_dim();
-}
-
-inline std::size_t num_rows(const GraphSymmetricMatrix& M){
-  return M.get_dim();
-}
-
-inline std::size_t num_cols(const GraphSymmetricMatrix& M){
-  return M.get_dim();
-}
-
-
-
-
 int main(int argc, char** argv)
 {
   // Check arguments
@@ -237,20 +217,20 @@ int main(int argc, char** argv)
   GraphSymmetricMatrix A(graph);
 
   // Create an ILU(0) preconditioner
-  itl::pc::identity<GraphSymmetricMatrix>        P(I);
+  itl::pc::identity<GraphSymmetricMatrix>        P(A);
 
   // Set b, RHS 
   mtl::dense_vector<double> b_RHS(graph.num_nodes(), 0.0);
   for (auto nit = graph.node_begin(); nit != graph.node_end(); ++nit){
-    auto i = *nit // i is my node
-    b_RHS[i.index()] = b(i);
+    auto i = *nit; // i is my node
+    b_RHS[i.index()] = b(i, graph);
   } 
 
   // Set x, Initial Guess
   mtl::dense_vector<double> x_soln(graph.num_nodes(), 1.0);
 
   // cyclic_iteration
-  cyclic_iteration<double> iter(b, 100, 1.e-10, 0, 100);
+  itl::cyclic_iteration<double> iter(b_RHS, 100, 1.e-10, 0, 100);
 
   // Solve Ax == b with left preconditioner P
   itl::cg(A, x_soln, b_RHS, P, iter);

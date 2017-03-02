@@ -118,7 +118,7 @@ int main()
 
     // Solve Ax == b with left preconditioner P
     cg(I, x, b, P, iter);
-std::cout << x << std::endl;
+//std::cout << x << std::endl;
 
 
 
