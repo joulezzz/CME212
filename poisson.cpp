@@ -194,6 +194,74 @@ struct ashape_aux<GraphSymmetricMatrix>{
 };
 }
 
+namespace itl {
+  template <class Real, class OStream = std::ostream>
+  class cyclic_iteration : public basic_iteration<Real> 
+  {
+      typedef basic_iteration<Real> super;
+      typedef cyclic_iteration self;
+
+    public:
+
+      template <class Vector>
+      cyclic_iteration(GraphType& g, CME212::SFML_Viewer& v, const Vector& r0, int max_iter_, Real tol_, Real atol_ = Real(0), int cycle_ = 100, OStream& out = std::cout)  
+      : super(r0, max_iter_, tol_, atol_), cycle(cycle_), last_print(-1), multi_print(false), out(out), graph_(graph), viewer_(viewer) {}
+      
+
+      bool finished() { return super::finished(); }
+
+      template <typename T>
+      bool finished(const T& r) 
+      {
+          bool ret= super::finished(r);
+          print_resid();
+          return ret;
+      }
+     
+      template <typename T>
+      bool finished(const T&* r){
+        CME212::SFML_Viewer viewer;
+        auto node_map = viewer.empty_node_map(graph);
+        viewer.add_nodes( graph.node_begin() , graph.node_end() , ColorFn(25.0) , NodePosition(x_soln), node_map );
+        viewer.add_edges( graph.edge_begin() , graph.edge_end(), node_map );
+        viewer.center_view();
+        bool ret= super::finished(r);
+        return ret;
+      }
+
+      inline self& operator++() { ++this->i; return *this; }
+      
+      inline self& operator+=(int n) { this->i+= n; return *this; }
+
+      operator int() const { return error_code(); }
+
+      bool is_multi_print() const { return multi_print; }
+
+      void set_multi_print(bool m) { multi_print= m; }
+
+      int error_code() const 
+      {
+          if (!this->my_suppress)
+              out << "finished! error code = " << this->error << '\n'
+                  << this->iterations() << " iterations\n"
+                  << this->resid() << " is actual final residual. \n"
+                  << this->relresid() << " is actual relative tolerance achieved. \n"
+                  << "Relative tol: " << this->rtol_ << "  Absolute tol: " << this->atol_ << '\n'
+                  << "Convergence:  " << pow(this->relresid(), 1.0 / double(this->iterations())) << std::endl;
+          return this->error;
+      }
+    private:
+      GraphType& graph_;
+      CME212::SFML_Viewer& viewer_;
+      std::map<NodeType, unsigned int> node_map_;
+  };
+}
+
+
+
+
+
+
 /** IdentityMatrix implements the Collection concept 
  * with value_type and size_type */
 template<>
@@ -227,6 +295,14 @@ struct Collection<GraphSymmetricMatrix> {
    private:
      mtl::dense_vector<double> x_;
   };
+
+
+
+
+
+
+
+
 
 int main(int argc, char** argv)
 {
@@ -307,13 +383,7 @@ int main(int argc, char** argv)
   // Solve Ax == b with left preconditioner P
   itl::cg(A, x_soln, b_RHS, P, iter);
   // Launch the SFML Viewer
-  CME212::SFML_Viewer viewer;
-  auto node_map = viewer.empty_node_map(graph);
 
- 
-
-  viewer.add_nodes( graph.node_begin() , graph.node_end() , ColorFn(25.0) , NodePosition(x_soln), node_map );
-  viewer.add_edges( graph.edge_begin() , graph.edge_end(), node_map );
 
 viewer.center_view();
 viewer.event_loop();
