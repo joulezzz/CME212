@@ -101,6 +101,10 @@ class GraphSymmetricMatrix{
   public:
     GraphSymmetricMatrix(GraphType& g) : g_(g) {}
 
+  std::size_t get_dim() const{
+	return g_.num_nodes();
+  }
+
   // L(i,j), Discrete Matrix Approximating Laplace Operator
   double L(NodeType i, NodeType j) const{
     if (i == j){
@@ -163,6 +167,38 @@ class GraphSymmetricMatrix{
 };
 
 
+inline std::size_t size(const GraphSymmetricMatrix& M){
+	return M.get_dim()*M.get_dim();
+}
+
+inline std::size_t num_rows(const GraphSymmetricMatrix& M){
+	return M.get_dim();
+}
+
+inline std::size_t num_cols(const GraphSymmetricMatrix& M){
+	return M.get_dim();
+}
+
+
+/** Traits that MTL used to detmerine propperties of our IdentityMatrix. */
+namespace mtl {
+namespace ashape {
+
+/** Define IdentityMatri to be a non-scalar type. */
+template<>
+struct ashape_aux<GraphSymmetricMatrix>{
+	typedef nonscal type;
+};
+}
+
+/** IdentityMatrix implements the Collection concept 
+ * with value_type and size_type */
+template<>
+struct Collection<GraphSymmetricMatrix> {
+	typedef double value_type;
+	typedef unsigned size_type;
+};
+} // end namespace
 
 int main(int argc, char** argv)
 {
