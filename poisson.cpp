@@ -53,7 +53,7 @@ void remove_box(GraphType& g, const Box3D& bb) {
 
 
 /** g(x), boundary conditions */
-double g_BCs(const NodeType n){
+double g_boundary(const NodeType n){
   // first check if on boundary
   CME212::BoundingBox<Point> thisbox = Box3D(Point(-0.6,-0.2,-1), Point( 0.6, 0.2,1));
   if (norm_inf(n.position()) == 1){
@@ -72,13 +72,13 @@ double g_BCs(const NodeType n){
 }
 
 /** f(x), forcing function */
-double forcing_function(const NodeType& n){
+double f(const NodeType& n){
   return 5.0*cos( norm_1(n.position()) );
 }
 
 /** b, RHS of system Ax = b */
 double b(const NodeType& i, const GraphType& graph){
-	double gofx_i = g_BCs(i);
+	double gofx_i = g_boundary(i);
 	if (gofx_i != double(-1)){
 		return gofx_i;
 	}
@@ -86,12 +86,12 @@ double b(const NodeType& i, const GraphType& graph){
 		double sum = 0;
 		for (auto eit = i.edge_begin(); eit != i.edge_end(); ++eit){
 			auto j = (*eit).node2();
-			double gofx_j = g_BCs(j);
+			double gofx_j = g_boundary(j);
 			if (gofx_j != double(-1)){
 				sum += gofx_j;
 			}
 		}
-		return pow(graph.edge(0).length(),2)*forcing_function(i) + sum;
+		return pow(graph.edge(0).length(),2)*f(i) + sum;
 	}
 }
 
@@ -121,10 +121,10 @@ class GraphSymmetricMatrix{
 
   // A(i,j), Linear System of Equations
   double A(NodeType i, NodeType j) const {
-    if ( (i == j) && (g_BCs(i) != -1) ){
+    if ( (i == j) && (g_boundary(i) != -1) ){
       return 1;
     }
-    else if ( (i != j) && ( (g_BCs(i) != -1) || (g_BCs(j) != -1) ) ){
+    else if ( (i != j) && ( (g_boundary(i) != -1) || (g_boundary(j) != -1) ) ){
       return 0;
     }
     else {
@@ -184,10 +184,6 @@ inline std::size_t num_cols(const GraphSymmetricMatrix& M){
 
 
 
-
-
-
-
 int main(int argc, char** argv)
 {
   // Check arguments
@@ -236,6 +232,28 @@ int main(int argc, char** argv)
   // Define b using the graph, f, and g.
   // Construct the GraphSymmetricMatrix A using the graph
   // Solve Au = b using MTL.
+
+  // Construct the GraphSymmetricMatrix A using the graph
+  GraphSymmetricMatrix A(graph);
+
+  // Create an ILU(0) preconditioner
+  itl::pc::identity<GraphSymmetricMatrix>        P(I);
+
+  // Set b, RHS 
+  mtl::dense_vector<double> b_RHS(graph.num_nodes(), 0.0);
+  for (auto nit = graph.node_begin(); nit != graph.node_end(); ++nit){
+    auto i = *nit // i is my node
+    b_RHS[i.index()] = b(i);
+  } 
+
+  // Set x, Initial Guess
+  mtl::dense_vector<double> x_soln(graph.num_nodes(), 1.0);
+
+  // cyclic_iteration
+  cyclic_iteration<double> iter(b, 100, 1.e-10, 0, 100);
+
+  // Solve Ax == b with left preconditioner P
+  itl::cg(A, x_soln, b_RHS, P, iter);
 
 
   return 0;
