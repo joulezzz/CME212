@@ -351,7 +351,7 @@ int main(int argc, char** argv)
         //viewer.add_nodes( graph.node_begin() , graph.node_end() , ColorFn(25.0) , NodePosition(x_soln), node_map );
         //viewer.add_edges( graph.edge_begin() , graph.edge_end(), node_map );
 
-  viewer.center_view();
+  //viewer.center_view();
   viewer.event_loop();
 
   return 0;
