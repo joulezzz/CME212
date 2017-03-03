@@ -33,6 +33,36 @@
 using GraphType = Graph<char,char>;  //<  DUMMY Placeholder
 using NodeType  = typename GraphType::node_type;
 
+
+ // Functor that colors the plot in an interesting way
+  struct ColorFn {
+    // operator
+    //CME212::BoundingBox<Point> colorbox = Box3D(Point(-0.6,-0.2,-1), Point( 0.6, 0.2,1));
+    CME212::Color operator () (NodeType n){ 
+      return CME212::Color::make_heat((v_[n.index()] - mtl::min(v_))/(mtl::max(v_) - mtl::min(v_) + 0.00000001));
+    }
+    // Constructor
+    ColorFn(mtl::dense_vector<double>& v) : v_(v) {};
+   private :
+    mtl::dense_vector<double>& v_;
+  };
+
+  // Functor that changes how nodes are plotted, so soln can be viewed on z-axis
+  struct NodePosition {
+    // Constructor 
+    NodePosition(mtl::dense_vector<double>& x) : x_(x) {}
+    // operator
+    Point operator () (NodeType n){
+	//	 n.position().z = x_[n.index()];
+	//return n.position(); //n.position();
+return Point(n.position().x, n.position().y, x_[n.index()]);
+    }
+   private:
+     mtl::dense_vector<double>& x_;
+  };
+
+
+
 /** Remove all the nodes in graph @a g whose posiiton is within Box3D @a bb.
  * @param[in,out] g  The Graph to remove nodes from
  * @param[in]    bb  The BoundingBox, all nodes inside this box will be removed
@@ -196,64 +226,42 @@ struct ashape_aux<GraphSymmetricMatrix>{
 
 namespace itl {
   template <class Real, class OStream = std::ostream>
-  class cyclic_iteration : public basic_iteration<Real> 
+  class visual_iteration : public ::itl::cyclic_iteration <Real>
   {
-      typedef basic_iteration<Real> super;
-      typedef cyclic_iteration self;
+      typedef ::itl::cyclic_iteration<Real> super;
+      typedef visual_iteration self;
 
     public:
 
       template <class Vector>
-      cyclic_iteration(GraphType& g, CME212::SFML_Viewer& v, const Vector& r0, int max_iter_, Real tol_, Real atol_ = Real(0), int cycle_ = 100, OStream& out = std::cout)  
-      : super(r0, max_iter_, tol_, atol_), cycle(cycle_), last_print(-1), multi_print(false), out(out), graph_(graph), viewer_(viewer) {}
+      visual_iteration(GraphType& graph, CME212::SFML_Viewer& viewer, mtl::dense_vector<double>& x_soln, const Vector& r0, int max_iter_, Real tol_, Real atol_ = Real(0), int cycle_ = 100)  
+      : super(r0, max_iter_, tol_, atol_, cycle_), graph_(graph), viewer_(viewer), x_soln_(x_soln) {
+	node_map_ = viewer_.empty_node_map(graph_);
+        viewer_.add_nodes( graph_.node_begin() , graph_.node_end() , ColorFn(x_soln_) , NodePosition(x_soln_), node_map_ );
+        viewer_.add_edges( graph_.edge_begin() , graph_.edge_end(), node_map_ );
+        viewer_.center_view();
+	}
       
 
-      bool finished() { return super::finished(); }
-
-      template <typename T>
-      bool finished(const T& r) 
-      {
-          bool ret= super::finished(r);
-          print_resid();
-          return ret;
+      bool finished() { 
+	viewer_.add_nodes( graph_.node_begin() , graph_.node_end() , ColorFn(x_soln_) , NodePosition(x_soln_), node_map_ );
+	return super::finished(); 
       }
      
       template <typename T>
-      bool finished(const T&* r){
-        CME212::SFML_Viewer viewer;
-        auto node_map = viewer.empty_node_map(graph);
-        viewer.add_nodes( graph.node_begin() , graph.node_end() , ColorFn(25.0) , NodePosition(x_soln), node_map );
-        viewer.add_edges( graph.edge_begin() , graph.edge_end(), node_map );
-        viewer.center_view();
+      bool finished(const T& r){
+        viewer_.add_nodes( graph_.node_begin() , graph_.node_end() , ColorFn(x_soln_) , NodePosition(x_soln_), node_map_ );
+        //viewer_.add_edges( graph_.edge_begin() , graph_.edge_end(), node_map );
+        //viewer_.center_view();
         bool ret= super::finished(r);
         return ret;
       }
 
-      inline self& operator++() { ++this->i; return *this; }
-      
-      inline self& operator+=(int n) { this->i+= n; return *this; }
-
-      operator int() const { return error_code(); }
-
-      bool is_multi_print() const { return multi_print; }
-
-      void set_multi_print(bool m) { multi_print= m; }
-
-      int error_code() const 
-      {
-          if (!this->my_suppress)
-              out << "finished! error code = " << this->error << '\n'
-                  << this->iterations() << " iterations\n"
-                  << this->resid() << " is actual final residual. \n"
-                  << this->relresid() << " is actual relative tolerance achieved. \n"
-                  << "Relative tol: " << this->rtol_ << "  Absolute tol: " << this->atol_ << '\n'
-                  << "Convergence:  " << pow(this->relresid(), 1.0 / double(this->iterations())) << std::endl;
-          return this->error;
-      }
     private:
       GraphType& graph_;
       CME212::SFML_Viewer& viewer_;
       std::map<NodeType, unsigned int> node_map_;
+      mtl::dense_vector<double>& x_soln_;
   };
 }
 
@@ -271,30 +279,7 @@ struct Collection<GraphSymmetricMatrix> {
 };
 } // end namespace
 
- // Functor that colors the plot in an interesting way
-  struct ColorFn {
-    // operator
-    CME212::Color operator () (NodeType n){
-      return CME212::Color::make_heat(1.0 - (float(n.value())/normalizer_) );
-    }
-    // Constructor
-    ColorFn(int normalizer) : normalizer_(normalizer){};
-   private :
-    const int normalizer_;
-  };
 
-  // Functor that changes how nodes are plotted, so soln can be viewed on z-axis
-  struct NodePosition {
-    // Constructor 
-    NodePosition(mtl::dense_vector<double>& x) : x_(x) {}
-    // operator
-    Point operator () (NodeType n){
-		 n.position().z = x_[n.index()];
-	return n.position(); //n.position();
-    }
-   private:
-     mtl::dense_vector<double> x_;
-  };
 
 
 
@@ -375,18 +360,26 @@ int main(int argc, char** argv)
     b_RHS[i.index()] = b(i, graph);
   } 
 
+  // Launch the SFML Viewer
+  CME212::SFML_Viewer viewer;
 
   // Set x, Initial Guess
   mtl::dense_vector<double> x_soln(graph.num_nodes(), 0.0);
+  
   // cyclic_iteration
-  itl::cyclic_iteration<double> iter(b_RHS, 300, 1.e-10, 0.0, 50);
+  //itl::cyclic_iteration<double> iter(b_RHS, 300, 1.e-10, 0.0, 50);
+  
+  // visual iteration
+  mtl::itl::visual_iteration<double> iter(graph, viewer, x_soln, b_RHS, 300, 1.e-10, 0.0, 50); // graph, viewer, x, b, max_iter, tol
+  
   // Solve Ax == b with left preconditioner P
   itl::cg(A, x_soln, b_RHS, P, iter);
-  // Launch the SFML Viewer
+	//auto node_map = viewer.empty_node_map(graph);
+        //viewer.add_nodes( graph.node_begin() , graph.node_end() , ColorFn(25.0) , NodePosition(x_soln), node_map );
+        //viewer.add_edges( graph.edge_begin() , graph.edge_end(), node_map );
 
-
-viewer.center_view();
-viewer.event_loop();
+  viewer.center_view();
+  viewer.event_loop();
 
   return 0;
 }
