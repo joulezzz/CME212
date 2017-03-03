@@ -22,8 +22,6 @@
 #include "CME212/BoundingBox.hpp"
 #include <math.h>
 
-
-
 #include "Graph.hpp"
 
 // HW3: YOUR CODE HERE
@@ -33,20 +31,19 @@
 using GraphType = Graph<char,char>;  //<  DUMMY Placeholder
 using NodeType  = typename GraphType::node_type;
 
-
- // Functor that colors the plot in an interesting way
+ /** ColorFn is a functor that colors the graph based on the normalize value of position().z of a node */
   struct ColorFn {
     // operator
     CME212::Color operator () (NodeType n){ 
-      return CME212::Color::make_heat((v_[n.index()] - mtl::min(v_))/(mtl::max(v_) - mtl::min(v_) + 0.00000001));
+      return CME212::Color::make_heat((x_[n.index()] - mtl::min(v_))/(mtl::max(x_) - mtl::min(x_) + 0.00000001));
     }
-    // Constructor
-    ColorFn(mtl::dense_vector<double>& v) : v_(v) {};
+    // Constructor fo ColorFn
+    ColorFn(mtl::dense_vector<double>& x) : x_(x) {};
    private :
-    mtl::dense_vector<double>& v_;
+    mtl::dense_vector<double>& x_;
   };
 
-  // Functor that changes how nodes are plotted, so soln can be viewed on z-axis
+  /** NodePosition that changes how nodes are plotted, so soln can be viewed on z-axis */
   struct NodePosition {
     // Constructor 
     NodePosition(mtl::dense_vector<double>& x) : x_(x) {}
@@ -57,8 +54,6 @@ return Point(n.position().x, n.position().y, x_[n.index()]);
    private:
      mtl::dense_vector<double>& x_;
   };
-
-
 
 /** Remove all the nodes in graph @a g whose posiiton is within Box3D @a bb.
  * @param[in,out] g  The Graph to remove nodes from
@@ -78,18 +73,24 @@ void remove_box(GraphType& g, const Box3D& bb) {
       ++it;
     }
   }
-  //return;
 }
 
-
-/** g(x), boundary conditions */
+/** Function that determines boundary conditions
+ * @param[in] n NodeType node from the graph
+ * @return 0.0  if infinity norm of x.position() == 1
+ *        -0.2  if 2-norm of (@a n.position - (+/- 0.6, +/- 0.6)) is less than 0.2
+ *         1.0  if @a n.position() is inside box defined by Box3D(Point(-0.6,-0.2,-1), Point( 0.6, 0.2,1))
+ *        -1.0  if none of the above is true, indicating n.position() is not on the boundary
+ * @pre 0 < @a n.index() < num_nodes()
+ */
 double g_boundary(const NodeType n){
   // first check if on boundary
   CME212::BoundingBox<Point> thisbox = Box3D(Point(-0.6,-0.2,-1), Point( 0.6, 0.2,1));
   if (norm_inf(n.position()) == 1){
     return 0.0;
   }
-  else if ( (norm_inf(n.position() - Point(0.6,0.6,0)) < 0.2) || (norm_inf(n.position() - Point(-0.6,0.6,0)) < 0.2) || (norm_inf(n.position() - Point(0.6,-0.6,0)) < 0.2) || (norm_inf(n.position() - Point(-0.6,-0.6,0)) < 0.2) ){
+  else if ( (norm_inf(n.position() - Point(0.6,0.6,0)) < 0.2) || (norm_inf(n.position() - Point(-0.6,0.6,0)) < 0.2) 
+    || (norm_inf(n.position() - Point(0.6,-0.6,0)) < 0.2) || (norm_inf(n.position() - Point(-0.6,-0.6,0)) < 0.2) ){
     return -0.2;
   }
   else if ( thisbox.contains(n.position()) ) {
@@ -101,12 +102,24 @@ double g_boundary(const NodeType n){
   }
 }
 
-/** f(x), forcing function */
+/** The forcing function that returns force at specified position
+ * @param[in] n NodeType node from graph
+ * @return      A double from [-5.0 to 5.0] defined by 5.0cos(1-norm(x)), where x = @a n.position()
+ * @pre 0 < @a n.index() < num_nodes()
+ */
 double f(const NodeType& n){
-  return 5.0*cos( norm_1(n.position()) );
+  return 5.0*cos( norm_1(@a n.position()) );
 }
 
-/** b, RHS of system Ax = b */
+/** b, RHS of system Ax = b 
+ * @param[in] i      Nodetype node from GraphType graph
+ * @param[in] graph  Graphtype for which node @i belongs to 
+ * @pre 0 < @a i.index() < num_nodes()
+ * @return g_boundary(@a i) if @a i.position() is on boundary
+     else  (h^2)f(@a i) - sum g(j) , where h = length of any edge in @a graph
+ *                                      and sum g(j) is the sum over all ajacent nodes to i that are on the boundary
+ *                                      i.e. such that graph.has_edge(@a i,j) and g_boundary(j) != -1
+ */
 double b(const NodeType& i, const GraphType& graph){
 	double gofx_i = g_boundary(i);
 	if (gofx_i != double(-1)){
@@ -121,13 +134,11 @@ double b(const NodeType& i, const GraphType& graph){
 				sum += gofx_j;
 			}
 		}
-		//std::cout << graph.edge(0).length() << std::endl;
 		return pow( double(graph.edge(0).length()) ,2)*f(i) - sum;
 	}
 }
 
-
-
+/** Traits that MTL uses to determine properties of our GraphSymmetricMatrix . */
 class GraphSymmetricMatrix{
   public:
     GraphSymmetricMatrix(GraphType& g) : g_(g) {}
@@ -136,10 +147,16 @@ class GraphSymmetricMatrix{
     return g_.num_nodes();
     }
 
-    // L(i,j), Discrete Matrix Approximating Laplace Operator
+    /** L(i,j), Discrete Matrix Approximating Laplace Operator
+     * @param[in] i NodeType denotes some node @a i some a graph of Graphtype
+     * @param[in] j NodeType denotes some node @a j some a graph of Graphtype
+     * @return      -i.degree() if i and j are the same nodes
+     *               1.0        if the edge containing i and j exists when i and j are not the same nodes
+     *               0.0        otherwise
+    * @pre 0 < @a i.index() < num_nodes(), same applies to @a j
+     */
     double L(NodeType i, NodeType j) const{
       if (i == j){
-        //std::cout << i.degree() << std::endl;
         return double(-1*int(i.degree()));
       }
       else if ( g_.has_edge(i,j) || g_.has_edge(j,i) ) {
@@ -150,7 +167,14 @@ class GraphSymmetricMatrix{
       }
     }
 
-    // A(i,j), Linear System of Equations
+    /** A(i,j), Linear System of Equations
+     * @param[in] i NodeType denotes some node @a i some a graph of Graphtype
+     * @param[in] j NodeType denotes some node @a j some a graph of Graphtype
+     * @return 1.0 @a i and @a j are the same node and @a i is on the boundary, i.e g_boundary(@a i) != -1
+     *         0.0 @a i and @a j are distinct nodes but at least one of them is on boundary.
+     *         L(@a i, @a j) otherwise
+     * @pre 0 < @a i.index() < num_nodes(), same applies to @a j
+     */
     double A(NodeType i, NodeType j) const {
       if ( (i == j) && (g_boundary(i) != -1) ){
         return double(1);
@@ -192,23 +216,23 @@ class GraphSymmetricMatrix{
     }
 
   private:
-
     GraphType& g_;    
 };
 
-
+/** The number of elements in the matrix . */
 inline std::size_t size(const GraphSymmetricMatrix& M){
 	return M.get_dim()*M.get_dim();
 }
 
+/** The number of rows in the matrix . */
 inline std::size_t num_rows(const GraphSymmetricMatrix& M){
 	return M.get_dim();
 }
 
+/** The number of columns in the matrix . */
 inline std::size_t num_cols(const GraphSymmetricMatrix& M){
 	return M.get_dim();
 }
-
 
 /** Traits that MTL used to detmerine propperties of our IdentityMatrix. */
 namespace mtl {
@@ -221,36 +245,32 @@ struct ashape_aux<GraphSymmetricMatrix>{
 };
 }
 
-/** Make comments*/
+/** Define the extension of cyclic iteration to custom class visual_iteration to plot data in addition to outputting the residual periodically. */
 namespace itl {
   template <class Real, class OStream = std::ostream>
   class visual_iteration : public ::itl::cyclic_iteration <Real>
   {
       typedef ::itl::cyclic_iteration<Real> super;
       typedef visual_iteration self;
-
+    
     public:
-
       template <class Vector>
       visual_iteration(GraphType& graph, CME212::SFML_Viewer& viewer, mtl::dense_vector<double>& x_soln, const Vector& r0, int max_iter_, Real tol_, Real atol_ = Real(0), int cycle_ = 100)  
       : super(r0, max_iter_, tol_, atol_, cycle_), graph_(graph), viewer_(viewer), x_soln_(x_soln) {
-	node_map_ = viewer_.empty_node_map(graph_);
+        node_map_ = viewer_.empty_node_map(graph_);
         viewer_.add_nodes( graph_.node_begin() , graph_.node_end() , ColorFn(x_soln_) , NodePosition(x_soln_), node_map_ );
         viewer_.add_edges( graph_.edge_begin() , graph_.edge_end(), node_map_ );
         viewer_.center_view();
-	}
-      
+      }
 
       bool finished() { 
-	viewer_.add_nodes( graph_.node_begin() , graph_.node_end() , ColorFn(x_soln_) , NodePosition(x_soln_), node_map_ );
-	return super::finished(); 
+        viewer_.add_nodes( graph_.node_begin() , graph_.node_end() , ColorFn(x_soln_) , NodePosition(x_soln_), node_map_ );
+        return super::finished(); 
       }
      
       template <typename T>
       bool finished(const T& r){
         viewer_.add_nodes( graph_.node_begin() , graph_.node_end() , ColorFn(x_soln_) , NodePosition(x_soln_), node_map_ );
-        //viewer_.add_edges( graph_.edge_begin() , graph_.edge_end(), node_map );
-        //viewer_.center_view();
         bool ret= super::finished(r);
         return ret;
       }
@@ -339,7 +359,7 @@ int main(int argc, char** argv)
   // Set x, Initial Guess
   mtl::dense_vector<double> x_soln(graph.num_nodes(), 0.0);
   
-  // cyclic_iteration
+  // cyclic_iteration: From Part 2, replaced with visual_iteration below
   //itl::cyclic_iteration<double> iter(b_RHS, 300, 1.e-10, 0.0, 50);
   
   // visual iteration
@@ -347,11 +367,7 @@ int main(int argc, char** argv)
   
   // Solve Ax = b using MTL.
   itl::cg(A, x_soln, b_RHS, P, iter);
-	//auto node_map = viewer.empty_node_map(graph);
-        //viewer.add_nodes( graph.node_begin() , graph.node_end() , ColorFn(25.0) , NodePosition(x_soln), node_map );
-        //viewer.add_edges( graph.edge_begin() , graph.edge_end(), node_map );
 
-  //viewer.center_view();
   viewer.event_loop();
 
   return 0;
