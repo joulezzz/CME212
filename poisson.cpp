@@ -35,7 +35,7 @@ using NodeType  = typename GraphType::node_type;
   struct ColorFn {
     // operator
     CME212::Color operator () (NodeType n){ 
-      return CME212::Color::make_heat((x_[n.index()] - mtl::min(v_))/(mtl::max(x_) - mtl::min(x_) + 0.00000001));
+      return CME212::Color::make_heat((x_[n.index()] - mtl::min(x_))/(mtl::max(x_) - mtl::min(x_) + 0.00000001));
     }
     // Constructor fo ColorFn
     ColorFn(mtl::dense_vector<double>& x) : x_(x) {};
@@ -108,7 +108,7 @@ double g_boundary(const NodeType n){
  * @pre 0 < @a n.index() < num_nodes()
  */
 double f(const NodeType& n){
-  return 5.0*cos( norm_1(@a n.position()) );
+  return 5.0*cos( norm_1(n.position()) );
 }
 
 /** b, RHS of system Ax = b 
