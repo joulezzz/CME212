@@ -50,7 +50,7 @@ class IdentityMatrix {
 	operator*(const Vector& v) const {
 		return {*this, v};
 	}
-	
+
   private:
   	std::size_t n_;
 };
@@ -99,7 +99,7 @@ int main()
     IdentityMatrix I(N);
 
     // Create an ILU(0) preconditioner
-    pc::identity<IdentityMatrix>        P(I);
+    itl::pc::identity<IdentityMatrix>        P(I);
 
     // Set b such that x == 1 is solution; start with x == 0
     mtl::dense_vector<double>          x(N, 1.0), b(N);
