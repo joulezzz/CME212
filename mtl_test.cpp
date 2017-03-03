@@ -11,10 +11,7 @@
 // HW3: YOUR CODE HERE
 // Define a IdentityMatrix that interfaces with MTL
 
-
-
-
-
+/** Creating a Matrix free linear operator class */ 
 class IdentityMatrix {
   public:
   	IdentityMatrix(std::size_t n) : n_(n) {}
@@ -22,7 +19,7 @@ class IdentityMatrix {
 	/** Compute the product of a vector with this identity matrix
 	 */
 
-	/**	
+	/**	For part 1
 	template <typename Vector>
 	Vector operator*(const Vector& x) const {
 		return x;
@@ -35,7 +32,7 @@ class IdentityMatrix {
 	}
 
 	/** Helper function to perfom multiplication. Allows for delayed 
-	 *  evaluation of results.
+	 *     evaluation of results.
 	 *  Assign :: apply(a, b) resolves to an assignment operation such as 
 	 *     a += b, a -= b, or a = b.
 	 *  @pre @a size(v) == size(w) */
@@ -53,25 +50,25 @@ class IdentityMatrix {
 	operator*(const Vector& v) const {
 		return {*this, v};
 	}
-
+	
   private:
-  	// Empty
   	std::size_t n_;
-
 };
 
+/** The number of elements in the matrix. */ 
 inline std::size_t size(const IdentityMatrix& A){
 	return A.get_dim()*A.get_dim();
 }
 
+/** The number of rows in the matrix. */
 inline std::size_t num_rows(const IdentityMatrix& A){
 	return A.get_dim();
 }
 
+/** The number of columns in the matrix. */
 inline std::size_t num_cols(const IdentityMatrix& A){
 	return A.get_dim();
 }
-
 
 /** Traits that MTL used to detmerine propperties of our IdentityMatrix. */
 namespace mtl {
@@ -82,7 +79,7 @@ template<>
 struct ashape_aux<IdentityMatrix>{
 	typedef nonscal type;
 };
-}
+} // end namespace ashape
 
 /** IdentityMatrix implements the Collection concept 
  * with value_type and size_type */
@@ -91,11 +88,7 @@ struct Collection<IdentityMatrix> {
 	typedef double value_type;
 	typedef unsigned size_type;
 };
-} // end namespace
-
-
-using namespace mtl;
-using namespace itl;
+} // end namespace mtl
 
 int main()
 {
@@ -109,20 +102,14 @@ int main()
     pc::identity<IdentityMatrix>        P(I);
 
     // Set b such that x == 1 is solution; start with x == 0
-    dense_vector<double>          x(N, 1.0), b(N);
+    mtl::dense_vector<double>          x(N, 1.0), b(N);
     b= I * x; x= 0;
 
     // Termination criterion: r < 1e-6 * b or N iterations
-    //noisy_iteration<double>       iter(b, 500, 1.e-6);
-    cyclic_iteration<double> iter(b, 100, 1.e-10, 0, 100);
+    itl::cyclic_iteration<double> iter(b, 100, 1.e-10, 0, 100);
 
     // Solve Ax == b with left preconditioner P
-    cg(I, x, b, P, iter);
-//std::cout << x << std::endl;
-
-
-
-
+    itl::cg(I, x, b, P, iter);
 
   return 0;
 }

@@ -37,7 +37,6 @@ using NodeType  = typename GraphType::node_type;
  // Functor that colors the plot in an interesting way
   struct ColorFn {
     // operator
-    //CME212::BoundingBox<Point> colorbox = Box3D(Point(-0.6,-0.2,-1), Point( 0.6, 0.2,1));
     CME212::Color operator () (NodeType n){ 
       return CME212::Color::make_heat((v_[n.index()] - mtl::min(v_))/(mtl::max(v_) - mtl::min(v_) + 0.00000001));
     }
@@ -53,8 +52,6 @@ using NodeType  = typename GraphType::node_type;
     NodePosition(mtl::dense_vector<double>& x) : x_(x) {}
     // operator
     Point operator () (NodeType n){
-	//	 n.position().z = x_[n.index()];
-	//return n.position(); //n.position();
 return Point(n.position().x, n.position().y, x_[n.index()]);
     }
    private:
@@ -135,67 +132,67 @@ class GraphSymmetricMatrix{
   public:
     GraphSymmetricMatrix(GraphType& g) : g_(g) {}
 
-  std::size_t get_dim() const{
-	return g_.num_nodes();
-  }
+    std::size_t get_dim() const{
+    return g_.num_nodes();
+    }
 
-  // L(i,j), Discrete Matrix Approximating Laplace Operator
-  double L(NodeType i, NodeType j) const{
-    if (i == j){
-      //std::cout << i.degree() << std::endl;
-      return double(-1*int(i.degree()));
-    }
-    else if ( g_.has_edge(i,j) || g_.has_edge(j,i) ) {
-      return double(1);
-    }
-    else {
-      return double(0);
-    }
-  }
-
-  // A(i,j), Linear System of Equations
-  double A(NodeType i, NodeType j) const {
-    if ( (i == j) && (g_boundary(i) != -1) ){
-      return double(1);
-    }
-    else if ( (i != j) && ( (g_boundary(i) != -1) || (g_boundary(j) != -1) ) ){
-      return double(0);
-    }
-    else {
-      return L(i,j);
-    }
-  }
-
-  /** Helper function to perfom multiplication. Allows for delayed 
-   *  evaluation of results.
-   *  Assign :: apply(a, b) resolves to an assignment operation such as 
-   *     a += b, a -= b, or a = b.
-   *  @pre @a size(v) == size(w) */
-  template <typename VectorIn, typename VectorOut, typename Assign>
-  void mult (const VectorIn& v, VectorOut& w, Assign) const {
-      assert(size(v) == size(w));
-      
-      for (auto nit = g_.node_begin(); nit != g_.node_end(); ++nit){
-        auto i = *nit;
-	double temp = 0.0;
-        for(auto njt = g_.node_begin(); njt != g_.node_end(); ++njt){
-          auto j = *njt;
-          //auto j = e.node2();
-          temp += A(i,j)*v[j.index()];
-        }
-        Assign::apply(w[i.index()], temp);
+    // L(i,j), Discrete Matrix Approximating Laplace Operator
+    double L(NodeType i, NodeType j) const{
+      if (i == j){
+        //std::cout << i.degree() << std::endl;
+        return double(-1*int(i.degree()));
       }
-  }
+      else if ( g_.has_edge(i,j) || g_.has_edge(j,i) ) {
+        return double(1);
+      }
+      else {
+        return double(0);
+      }
+    }
 
-  /** Matvec forward to MTL's lazy mat_cvec_multiplier oeprator */
-  template <typename Vector> 
-  mtl::vec::mat_cvec_multiplier<GraphSymmetricMatrix, Vector>
-  operator*(const Vector& v) const {
-    return {*this, v};
-  }
+    // A(i,j), Linear System of Equations
+    double A(NodeType i, NodeType j) const {
+      if ( (i == j) && (g_boundary(i) != -1) ){
+        return double(1);
+      }
+      else if ( (i != j) && ( (g_boundary(i) != -1) || (g_boundary(j) != -1) ) ){
+        return double(0);
+      }
+      else {
+        return L(i,j);
+      }
+    }
 
+    /** Helper function to perfom multiplication. Allows for delayed 
+     *  evaluation of results.
+     *  Assign :: apply(a, b) resolves to an assignment operation such as 
+     *     a += b, a -= b, or a = b.
+     *  @pre @a size(v) == size(w) */
+    template <typename VectorIn, typename VectorOut, typename Assign>
+    void mult (const VectorIn& v, VectorOut& w, Assign) const {
+        assert(size(v) == size(w));
+        
+        for (auto nit = g_.node_begin(); nit != g_.node_end(); ++nit){
+          auto i = *nit;
+    double temp = 0.0;
+          for(auto njt = g_.node_begin(); njt != g_.node_end(); ++njt){
+            auto j = *njt;
+            //auto j = e.node2();
+            temp += A(i,j)*v[j.index()];
+          }
+          Assign::apply(w[i.index()], temp);
+        }
+    }
+
+    /** Matvec forward to MTL's lazy mat_cvec_multiplier oeprator */
+    template <typename Vector> 
+    mtl::vec::mat_cvec_multiplier<GraphSymmetricMatrix, Vector>
+    operator*(const Vector& v) const {
+      return {*this, v};
+    }
 
   private:
+
     GraphType& g_;    
 };
 
@@ -224,6 +221,7 @@ struct ashape_aux<GraphSymmetricMatrix>{
 };
 }
 
+/** Make comments*/
 namespace itl {
   template <class Real, class OStream = std::ostream>
   class visual_iteration : public ::itl::cyclic_iteration <Real>
@@ -265,11 +263,6 @@ namespace itl {
   };
 }
 
-
-
-
-
-
 /** IdentityMatrix implements the Collection concept 
  * with value_type and size_type */
 template<>
@@ -280,15 +273,7 @@ struct Collection<GraphSymmetricMatrix> {
 } // end namespace
 
 
-
-
-
-
-
-
-
-
-
+/** MAIN */
 int main(int argc, char** argv)
 {
   // Check arguments
@@ -334,26 +319,14 @@ int main(int argc, char** argv)
   remove_box(graph, Box3D(Point(-0.6+h,-0.2+h,-1), Point( 0.6-h, 0.2-h,1)));
 
   // HW3: YOUR CODE HERE
-  // Define b using the graph, f, and g.
-  // Construct the GraphSymmetricMatrix A using the graph
-  // Solve Au = b using MTL.
-
+ 
   // Construct the GraphSymmetricMatrix A using the graph
   GraphSymmetricMatrix A(graph);
- /**
- for (unsigned int i = 0; i < graph.num_nodes(); ++i){
-	for (unsigned int j = 0; j < graph.num_nodes(); ++j){
-		std::cout << A.A(graph.node(i),graph.node(j)) << " ";
-	}
-	std::cout << std::endl;
-  }
-  */
-	
 
   // Create an ILU(0) preconditioner
   itl::pc::identity<GraphSymmetricMatrix>        P(A);
 
-  // Set b, RHS 
+  // Define b using the graph, f, and g.
   mtl::dense_vector<double> b_RHS(graph.num_nodes(), 0.0);
   for (auto nit = graph.node_begin(); nit != graph.node_end(); ++nit){
     auto i = *nit; // i is my node
@@ -372,14 +345,14 @@ int main(int argc, char** argv)
   // visual iteration
   mtl::itl::visual_iteration<double> iter(graph, viewer, x_soln, b_RHS, 300, 1.e-10, 0.0, 50); // graph, viewer, x, b, max_iter, tol
   
-  // Solve Ax == b with left preconditioner P
+  // Solve Ax = b using MTL.
   itl::cg(A, x_soln, b_RHS, P, iter);
 	//auto node_map = viewer.empty_node_map(graph);
         //viewer.add_nodes( graph.node_begin() , graph.node_end() , ColorFn(25.0) , NodePosition(x_soln), node_map );
         //viewer.add_edges( graph.edge_begin() , graph.edge_end(), node_map );
 
-  viewer.center_view();
-  viewer.event_loop();
+  //viewer.center_view();
+  //viewer.event_loop();
 
   return 0;
 }
