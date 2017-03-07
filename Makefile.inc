@@ -22,6 +22,7 @@ endif
 
 # Define the C++ compiler to use
 CXX := $(shell which clang++)
+CXX := clang++ -fopenmp=libiomp5
 
 # Dependency directory and flags
 DEPSDIR := $(shell mkdir -p .deps; echo .deps)
@@ -37,6 +38,7 @@ INCLUDES += -I/home/cme212-user/Documents/MTL/MTL-4.0.9555-Linux/usr/include
 
 # Define cxx compile flags
 CXXFLAGS  := -std=c++11 -O3 -W -Wall -Wextra #-Wfatal-errors
+CXXFLAGS  +=  -DTHRUST_DEVICE_SYSTEM = TRUST_DEVICE_SYSTEM_OMP
 
 # Define any directories containing libraries
 #   To include directories use -Lpath/to/files
