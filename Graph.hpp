@@ -559,20 +559,31 @@ public:
         adjacency_.clear();
         i2u_.clear();
     }
-
+    
     //
     // Node Iterator
     //
+    // note: functor inherits from unary_function
+    struct Uid2Node// : public thrust::unary_function<size_type, Node>
+    {
+        Node operator()(size_type idx) const { 
+            return Node(g_, idx);
+        }
+        const graph_type* g_;
+    };
+
     class NodeIterator : public thrust::transform_iterator<Uid2Node, std::vector<size_type>::const_iterator, Node> {
         // Import super class ’s constructors
         using NodeIterator::transform_iterator::transform_iterator;
         // Custom constructor
+       private:
+	friend class Graph;
         NodeIterator ( const graph_type* g, size_type idx)          // Old Constructor Interface
-            : NodeIterator::transform_iterator (g.i2u_.begin() + idx, Uid2Node{g})      // TransformIter Constructor
+            : NodeIterator::transform_iterator (g->i2u_.begin() + idx, Uid2Node{g})      // TransformIter Constructor
         {}
         // NOTHING ELSE
     };
-    using node_iterator = NodeIterator ;
+    //using node_iterator = NodeIterator;
 /**
     // @class Graph::NodeIterator
     //  @brief Iterator class for nodes. A forward iterator. 
@@ -914,15 +925,7 @@ private:
     std::vector <node_info> nodes_;
     std::vector <uid_type> i2u_;
     std::vector <std::vector<edge_info>> adjacency_;
-
-    // note: functor inherits from unary_function
-    struct Uid2Node : public thrust::unary_function<float,float>
-    {
-        float operator()(uid_type uid) const { 
-            return Node(g_, uid);
-        };
-        const graph_type* g_;
-    };
+};
 
 #endif // CME212_GRAPH_HPP
 

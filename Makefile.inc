@@ -35,10 +35,11 @@ DEPSFLAGS = -MD -MF $(DEPSFILE) #-MP
 # Define any directories containing header files
 #   To include directories use -Ipath/to/files
 INCLUDES += -I/home/cme212-user/Documents/MTL/MTL-4.0.9555-Linux/usr/include
+INCLUDES += -I/home/cme212-user/cme212-joulezzz/thrust
 
 # Define cxx compile flags
 CXXFLAGS  := -std=c++11 -O3 -W -Wall -Wextra #-Wfatal-errors
-CXXFLAGS  +=  -DTHRUST_DEVICE_SYSTEM = TRUST_DEVICE_SYSTEM_OMP
+CXXFLAGS  +=  -DTHRUST_DEVICE_SYSTEM=THRUST_DEVICE_SYSTEM_OMP
 
 # Define any directories containing libraries
 #   To include directories use -Lpath/to/files
