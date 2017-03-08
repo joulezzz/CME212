@@ -560,6 +560,9 @@ public:
         i2u_.clear();
     }
     
+
+
+    
     //
     // Node Iterator
     //
@@ -583,63 +586,8 @@ public:
         {}
         // NOTHING ELSE
     };
-    //using node_iterator = NodeIterator;
-/**
-    // @class Graph::NodeIterator
-    //  @brief Iterator class for nodes. A forward iterator. 
-    class NodeIterator : private totally_ordered<NodeIterator> {
-    public:
-        // These type definitions let us use STL's iterator_traits.
-        using value_type        = Node;                     // Element type
-        using pointer           = Node *;                    // Pointers to elements
-        using reference         = Node &;                    // Reference to elements
-        using difference_type   = std::ptrdiff_t;           // Signed difference
-        using iterator_category = std::input_iterator_tag;  // Weak Category, Proxy
 
-        // Construct an invalid NodeIterator. 
-        NodeIterator() {
-        }
 
-        /** Return the node at the node iterator.
-         * @pre node_uid_ != graph_->num_nodes()
-         
-        Node operator*() const {
-            assert(idx_ != graph_->num_nodes());
-            return graph_->node(idx_);
-        }
-
-        /** Return the node iterator to the next element. 
-        NodeIterator &operator++() {
-            ++idx_;
-            return *this;
-        }
-
-        /** Test whether this node iterator and @a ni are equal.
-         *
-         * Equal node iterators have the same graph and the same node id.
-         
-        bool operator==(const NodeIterator &ni) const {
-            return (graph_ == ni.graph_) and (idx_ == ni.idx_);
-        }
-
-    private:
-        friend class Graph;
-
-        Graph *graph_;
-        size_type idx_;
-
-        /** Valid NodeIterator constructor
-         * @pre @a graph_ != NULL
-         * @pre 0 <= @a node_uid_ < graph_->num_nodes()
-         
-        NodeIterator(const Graph *graph, size_type idx)
-                : graph_(const_cast<Graph *>(graph)), idx_(idx) {
-            assert(graph_ != NULL);
-            assert(0 <= idx and idx_ <= graph_->num_nodes());
-        }
-
-    };
-*/
 
 
     /** Return a node iterator pointing to the first element of node sequence.
