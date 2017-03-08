@@ -21,8 +21,8 @@ ifeq ($(arch-name),)
 endif
 
 # Define the C++ compiler to use
-CXX := $(shell which clang++)
-CXX := clang++ -fopenmp=libiomp5
+CXX := $(shell which clang++) 
+CXX += -fopenmp=libiomp5
 
 # Dependency directory and flags
 DEPSDIR := $(shell mkdir -p .deps; echo .deps)

@@ -9,6 +9,8 @@
 #include <vector>
 #include <cassert>
 
+#include <thrust/iterator/transform_iterator.h>
+
 #include "CME212/Util.hpp"
 #include "CME212/Point.hpp"
 
@@ -561,6 +563,16 @@ public:
     //
     // Node Iterator
     //
+    class NodeIterator : public thrust::transform_iterator<Uid2Node, std::vector<size_type>::const_iterator, Node> {
+        // Import super class ’s constructors
+        using NodeIterator::transform_iterator::transform_iterator;
+        // Custom constructor
+        NodeIterator ( const graph_type* g, size_type idx)          // Old Constructor Interface
+            : NodeIterator::transform_iterator (g.i2u_.begin() + idx, Uid2Node{g})      // TransformIter Constructor
+        {}
+        // NOTHING ELSE
+    };
+    using node_iterator = NodeIterator ;
 /**
     // @class Graph::NodeIterator
     //  @brief Iterator class for nodes. A forward iterator. 
@@ -617,6 +629,7 @@ public:
 
     };
 */
+
 
     /** Return a node iterator pointing to the first element of node sequence.
      * @return NodeIterator pointing to the first element
@@ -902,7 +915,14 @@ private:
     std::vector <uid_type> i2u_;
     std::vector <std::vector<edge_info>> adjacency_;
 
-};
+    // note: functor inherits from unary_function
+    struct Uid2Node : public thrust::unary_function<float,float>
+    {
+        float operator()(uid_type uid) const { 
+            return Node(g_, uid);
+        };
+        const graph_type* g_;
+    };
 
 #endif // CME212_GRAPH_HPP
 
