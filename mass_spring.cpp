@@ -14,6 +14,8 @@
 //#include <cmath>
 
 #include <thrust/for_each.h>
+#include <thrust/system/omp/detail/par.h>
+
 
 #include "CME212/SFML_Viewer.hpp"
 #include "CME212/Util.hpp"
@@ -66,32 +68,39 @@ using Edge = typename GraphType::edge_type;
  */
 
 // Functor to update the node positions (i.e. compute t+dt)
-template<typename N>
 struct UpdatePosition {
-  void operator()(N& n) {
+  void operator()(Node n) {
     n.position() += n.value().vel * dt;
   }
-  double dt_;
+  double dt;
 };
 
-template<typename N, typename F>
+template<typename F>
 struct UpdateVelocity {
-  void operator()(N& n) {
+  void operator()(Node n) {
     n.value().vel += force(n, t) * (dt / n.value().mass);
     if (n.position() == Point(0,0,0) || n.position() == Point(1,0,0)){
       n.value().vel = Point(0,0,0);
+    }
   }
   double t;
   double dt; 
   F force;
-}
+};
 
 
 template <typename G, typename F, typename C>
 double symp_euler_step(G& g, double t, double dt, F force, C constraint) {
   // Compute the t+dt position
   // updates all node positions
-  thrust::for_each(thrust::omp::par, g.node_begin(), g.node_end(), UpdatePosition{dt})
+  
+
+ 
+  
+  thrust::for_each(thrust::system::omp::par, g.node_begin(), g.node_end(), UpdatePosition{dt});
+
+ 
+  
   //for (auto it = g.node_begin(); it != g.node_end(); ++it) {
   //  auto n = *it;
 
@@ -104,7 +113,11 @@ double symp_euler_step(G& g, double t, double dt, F force, C constraint) {
 
   // Compute the t+dt velocity
   // updates all node velocities
-  thrust::for_each(thrust::omp::par, g.node_begin(), g.node_end(), UpdateVelocity{dt, t, force})
+
+ 
+  thrust::for_each(thrust::system::omp::par, g.node_begin(), g.node_end(), UpdateVelocity<F>{t, dt, force});
+
+  
   //for (auto it = g.node_begin(); it != g.node_end(); ++it) {
   //  auto n = *it;
 
@@ -320,14 +333,15 @@ int main(int argc, char** argv)
   }
   // HW2 #1 YOUR CODE HERE
   // Set initial conditions for your nodes, if necessary.
+  double spring_constant = 100.0/graph.num_nodes();
   for (auto it = graph.node_begin(); it != graph.node_end(); ++it) {
     auto n = *it;
     n.value().vel = Point(0,0,0);
-    n.value().mass = 1.0/graph.num_nodes();
+    n.value().mass = (1.0/graph.num_nodes())/graph.num_nodes();
   }
   for (auto it = graph.edge_begin(); it != graph.edge_end(); ++it) {
     auto e = *it;
-    e.value() = EdgeData(100.00, e.length());
+    e.value() = EdgeData(spring_constant, e.length());
   }
 
   double c = 1.0/graph.num_nodes(); // damping coefficient
@@ -362,10 +376,10 @@ int main(int argc, char** argv)
   auto sim_thread = std::thread([&](){
 
       // Begin the mass-spring simulation
-      double dt = 0.001; 
+      double dt = 1.0/graph.num_nodes(); 
       double t_start = 0;
       double t_end = 5.0;
-
+      CME212::Clock clock;
       for (double t = t_start; t < t_end && !interrupt_sim_thread; t += dt) {
         //std::cout << "t = " << t << std::endl;
         symp_euler_step(graph, t, dt, total_force, all_constraints); // replace Problem1Force() with CombinedForce()
@@ -385,6 +399,7 @@ int main(int argc, char** argv)
         if (graph.size() < 100)
           std::this_thread::sleep_for(std::chrono::milliseconds(1));
       }
+      std::cout << clock.seconds() << std::endl;
 
     });  // simulation thread
 
