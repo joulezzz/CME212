@@ -97,7 +97,8 @@ double symp_euler_step(G& g, double t, double dt, F force, C constraint) {
 
  
   
-  thrust::for_each(thrust::system::omp::par, g.node_begin(), g.node_end(), UpdatePosition{dt});
+  //thrust::for_each(thrust::system::omp::par, g.node_begin(), g.node_end(), UpdatePosition{dt});
+  thrust::for_each(thrust::system::detail::sequential::seq, g.node_begin(), g.node_end(), UpdatePosition{dt});
 
  
   
@@ -115,7 +116,8 @@ double symp_euler_step(G& g, double t, double dt, F force, C constraint) {
   // updates all node velocities
 
  
-  thrust::for_each(thrust::system::omp::par, g.node_begin(), g.node_end(), UpdateVelocity<F>{t, dt, force});
+  //thrust::for_each(thrust::system::omp::par, g.node_begin(), g.node_end(), UpdateVelocity<F>{t, dt, force});
+  thrust::for_each(thrust::system::detail::sequential::seq, g.node_begin(), g.node_end(), UpdateVelocity<F>{t, dt, force});
 
   
   //for (auto it = g.node_begin(); it != g.node_end(); ++it) {
