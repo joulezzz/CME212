@@ -13,6 +13,8 @@
 #include <thread>
 //#include <cmath>
 
+#include <thrust/for_each.h>
+
 #include "CME212/SFML_Viewer.hpp"
 #include "CME212/Util.hpp"
 #include "CME212/Color.hpp"
@@ -62,30 +64,57 @@ using Edge = typename GraphType::edge_type;
  *           @a force must return a Point representing the force vector on
  *           Node n at time @a t.
  */
+
+// Functor to update the node positions (i.e. compute t+dt)
+template<typename N>
+struct UpdatePosition {
+  void operator()(N& n) {
+    n.position() += n.value().vel * dt;
+  }
+  double dt_;
+};
+
+template<typename N, typename F>
+struct UpdateVelocity {
+  void operator()(N& n) {
+    n.value().vel += force(n, t) * (dt / n.value().mass);
+    if (n.position() == Point(0,0,0) || n.position() == Point(1,0,0)){
+      n.value().vel = Point(0,0,0);
+  }
+  double t;
+  double dt; 
+  F force;
+}
+
+
 template <typename G, typename F, typename C>
 double symp_euler_step(G& g, double t, double dt, F force, C constraint) {
   // Compute the t+dt position
-  for (auto it = g.node_begin(); it != g.node_end(); ++it) {
-    auto n = *it;
+  // updates all node positions
+  thrust::for_each(thrust::omp::par, g.node_begin(), g.node_end(), UpdatePosition{dt})
+  //for (auto it = g.node_begin(); it != g.node_end(); ++it) {
+  //  auto n = *it;
 
     // Update the position of the node according to its velocity
     // x^{n+1} = x^{n} + v^{n} * dt
-    n.position() += n.value().vel * dt;
-  }
+  //  n.position() += n.value().vel * dt;
+  //}
 
   constraint(g,t); 
 
   // Compute the t+dt velocity
-  for (auto it = g.node_begin(); it != g.node_end(); ++it) {
-    auto n = *it;
+  // updates all node velocities
+  thrust::for_each(thrust::omp::par, g.node_begin(), g.node_end(), UpdateVelocity{dt, t, force})
+  //for (auto it = g.node_begin(); it != g.node_end(); ++it) {
+  //  auto n = *it;
 
     // v^{n+1} = v^{n} + F(x^{n+1},t) * dt / m
-    n.value().vel += force(n, t) * (dt / n.value().mass);
+  //  n.value().vel += force(n, t) * (dt / n.value().mass);
 
-    if (n.position() == Point(0,0,0) || n.position() == Point(1,0,0)){
-	    n.value().vel = Point(0,0,0);
-    }
-  }
+  //  if (n.position() == Point(0,0,0) || n.position() == Point(1,0,0)){
+	//    n.value().vel = Point(0,0,0);
+  //  }
+  //}
   return t + dt;
 }
 
