@@ -3,10 +3,18 @@
  * @brief Define the SpaceSearcher class for making efficient spatial searches.
  */
 
+#include <thrust/tuple.h>
+
 #include "CME212/Util.hpp"
 #include "CME212/Point.hpp"
 #include "CME212/BoundingBox.hpp"
 #include "MortonCoder.hpp"
+
+struct P2C {
+    code_type operator()(Point p) const {
+      return code(p);
+    }
+  };
 
 /** @class SpaceSearcher
  * @brief Class for making spatial searches, which uses the MortonCoder
@@ -104,11 +112,27 @@ class SpaceSearcher
    * @pre std::distance(tfirst,tlast) == std::distance(pfirst,plast).
    * @pre For all i in [@a pfirst,@a plast), bb.contains(*i).
    */
+
   template <typename TIter, typename PointIter>
   SpaceSearcher(const Box3D& bb,
-                TIter tfirst, TIter tlast,
+                TIter tfirst, TIter tlast, 
                 PointIter pfirst, PointIter plast) {
     // HW4: YOUR CODE HERE
+
+    // transform Point iterators to code_type iterators
+    thrust::transform_iterator<P2C, PointIter> cfirst(pfirst, P2C());
+    thrust::transform_iterator<P2C, PointIter> clast(plast,  P2C());
+
+    // get first and last tuples
+    thrust::tuple<code_type, value_type> morton_tuple_first(cfirst,tfirst);
+    thrust::tuple<code_type, value_type> morton_tuple_last(clast,tlast);
+
+    // get iterator for first and last morton tuples
+    thrust::zip_iterator<thrust::tuple<code_type, value_type>> mfirst(morton_tuple_first);
+    thrust::zip_iterator<thrust::tuple<code_type, value_type>> mlast(morton_tuple_last);
+
+    // make vector using iterators
+    z_data = std::vector<morton pair>(mfirst, mlast);
   }
 
   ///////////////
@@ -214,8 +238,9 @@ class SpaceSearcher
     // Cast operator to treat a morton_pair as a code_type in std::algorithms
     operator const code_type&() const { return code_; }
     // HW4: YOUR CODE HERE
-  };
+    morton_pair(thrust::tuple<code_type,value_type> morton_info) : code_(thrust::get<0>(morton_info)), value_(thrust::get<1>(morton_info)) {}
 
+  };
   // Pairs of Morton codes and data items of type T.
   // RI: std::is_sorted(z_data_.begin(), z_data_.end())
   std::vector<morton_pair> z_data_;
