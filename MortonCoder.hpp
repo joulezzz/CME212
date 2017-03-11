@@ -189,7 +189,7 @@ class MortonCoder
   /** Return the bounding box of the cell with Morton code @a c.
    * @pre c < end_code
    */
-  Box3D cell(code_type c) const {
+  Box3D cell(yrt) const {
     assert(c < end_code);
     Point p = deinterleave(c);
     p *= cell_size_;
