@@ -14,7 +14,10 @@ struct P2C {
     code_type operator()(Point p) const {
       return code(p);
     }
-  };
+};
+
+
+
 
 /** @class SpaceSearcher
  * @brief Class for making spatial searches, which uses the MortonCoder
@@ -88,8 +91,9 @@ class SpaceSearcher
    */
   template <typename TIter, typename T2Point>
   SpaceSearcher(const Box3D& bb,
-                TIter first, TIter last, T2Point t2p) {
+                TIter first, TIter last, T2Point t2p) { // code_type iterators and point iterators
     // HW4: YOUR CODE HERE
+    SpaceSearcher(bb, tfirst, tlast, thrust::transform_iterator(tfirst, t2p), thrust::transform_iterator(tlast, t2p))
   }
 
   /** @brief SpaceSearcher Constructor.
