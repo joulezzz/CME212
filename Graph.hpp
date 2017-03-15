@@ -569,15 +569,17 @@ public:
     // note: functor inherits from unary_function
     struct Uid2Node// : public thrust::unary_function<size_type, Node>
     {
+	//Uid2Node(const graph_type *g) : g_(g){}
         Node operator()(size_type idx) const { 
             return Node(g_, idx);
         }
         const graph_type* g_;
     };
 
+/**
     class NodeIterator : public thrust::transform_iterator<Uid2Node, std::vector<size_type>::const_iterator, Node> {
         // Import super class ’s constructors
-        using NodeIterator::transform_iterator::transform_iterator;
+        //using NodeIterator::transform_iterator::transform_iterator;
         // Custom constructor
        private:
 	friend class Graph;
@@ -587,6 +589,17 @@ public:
         // NOTHING ELSE
     };
 
+*/
+
+    class NodeIterator : public thrust::transform_iterator<Uid2Node, std::vector<size_type>::const_iterator, Node> {
+     public:
+       using super_t = thrust::transform_iterator<Uid2Node, std::vector<size_type>::const_iterator, Node>;
+       NodeIterator() {}
+       NodeIterator(const super_t& ti) : super_t(ti) {}
+     private:
+       friend class Graph;
+       NodeIterator(const graph_type* g, size_type idx) : super_t(g->i2u_.begin() + idx, Uid2Node{g}) {}
+    };
 
 
 
@@ -597,7 +610,7 @@ public:
      * Complexity: O(1)
      */
     node_iterator node_begin() const {
-        return NodeIterator(this, 0);
+        return NodeIterator(this, 0);//i2u_.begin()
     }
 
     /** Return a node iterator pointing to the past-the-end element in node sequence.
@@ -607,7 +620,7 @@ public:
      * Complexity: O(1)
      */
     node_iterator node_end() const {
-        return NodeIterator(this, num_nodes());
+        return NodeIterator(this, num_nodes());// i2u_.end()
     }
 
     //

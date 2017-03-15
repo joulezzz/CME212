@@ -15,6 +15,7 @@
 
 #include <thrust/for_each.h>
 #include <thrust/system/omp/detail/par.h>
+#include <thrust/system/omp/execution_policy.h>
 
 
 #include "CME212/SFML_Viewer.hpp"

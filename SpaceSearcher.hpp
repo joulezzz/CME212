@@ -3,19 +3,16 @@
  * @brief Define the SpaceSearcher class for making efficient spatial searches.
  */
 
+#include <thrust/iterator/zip_iterator.h>
 #include <thrust/tuple.h>
+#include <thrust/sort.h>
+#include <thrust/iterator/transform_iterator.h>
+
 
 #include "CME212/Util.hpp"
 #include "CME212/Point.hpp"
 #include "CME212/BoundingBox.hpp"
 #include "MortonCoder.hpp"
-
-struct P2C {
-    code_type operator()(Point p) const {
-      return code(p);
-    }
-};
-
 
 
 
@@ -49,7 +46,6 @@ class SpaceSearcher
   struct morton_pair;
 
  public:
-
   ////////////////////////////////////
   // TYPE DEFINITIONS AND CONSTANTS //
   ////////////////////////////////////
@@ -65,6 +61,12 @@ class SpaceSearcher
   using const_iterator = NeighborhoodIterator;
 
  public:
+  struct P2C {
+    code_type operator()(const Point& p) const {
+      return mc.code(p);
+    }
+    MortonCoderType mc;
+  };
 
   /////////////////
   // CONSTRUCTOR //
@@ -91,9 +93,9 @@ class SpaceSearcher
    */
   template <typename TIter, typename T2Point>
   SpaceSearcher(const Box3D& bb,
-                TIter first, TIter last, T2Point t2p) { // code_type iterators and point iterators
+                TIter first, TIter last, T2Point t2p) :mc_(bb){ // code_type iterators and point iterators
     // HW4: YOUR CODE HERE
-    SpaceSearcher(bb, tfirst, tlast, thrust::transform_iterator(tfirst, t2p), thrust::transform_iterator(tlast, t2p))
+    SpaceSearcher(bb, first, last, thrust::make_transform_iterator(first, t2p), thrust::make_transform_iterator(last, t2p));
   }
 
   /** @brief SpaceSearcher Constructor.
@@ -120,23 +122,26 @@ class SpaceSearcher
   template <typename TIter, typename PointIter>
   SpaceSearcher(const Box3D& bb,
                 TIter tfirst, TIter tlast, 
-                PointIter pfirst, PointIter plast) {
+                PointIter pfirst, PointIter plast) :mc_(bb) {
     // HW4: YOUR CODE HERE
 
     // transform Point iterators to code_type iterators
-    thrust::transform_iterator<P2C, PointIter> cfirst(pfirst, P2C());
-    thrust::transform_iterator<P2C, PointIter> clast(plast,  P2C());
+    //auto P2C = [&](const Point& p) {return mc_.code(p);};
+    thrust::transform_iterator<P2C, PointIter>  cfirst(pfirst, P2C{mc_});
+    thrust::transform_iterator<P2C, PointIter>  clast(plast, P2C{mc_});
 
-    // get first and last tuples
-    thrust::tuple<code_type, value_type> morton_tuple_first(cfirst,tfirst);
-    thrust::tuple<code_type, value_type> morton_tuple_last(clast,tlast);
+    auto morton_first_tuple = thrust::make_tuple(cfirst, tfirst);
+    auto morton_last_tuple = thrust::make_tuple(clast, tlast);
+
 
     // get iterator for first and last morton tuples
-    thrust::zip_iterator<thrust::tuple<code_type, value_type>> mfirst(morton_tuple_first);
-    thrust::zip_iterator<thrust::tuple<code_type, value_type>> mlast(morton_tuple_last);
+    auto mfirst = thrust::make_zip_iterator(morton_first_tuple);
+    auto mlast = thrust::make_zip_iterator(morton_last_tuple);
 
     // make vector using iterators
-    z_data = std::vector<morton pair>(mfirst, mlast);
+    z_data_ = std::vector<morton_pair>(mfirst, mlast);
+    // sort the vector
+    thrust::sort(z_data_.begin(), z_data_.end());
   }
 
   ///////////////

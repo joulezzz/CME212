@@ -62,7 +62,7 @@ inline uint32_t spread_bits(uint32_t x) {
  */
 inline uint32_t compact_bits(uint32_t x) {
   // HW4: YOUR CODE HERE
-  x &= mask;
+  //x &= 0b00001001001001001001001001001001;
   // x				              0bXXXXAXXBXXCXXDXXEXXFXXGXXHXXIXXJ 
   // mask			              0b00001001001001001001001001001001
   // x &= mask			        0b0000A00B00C00D00E00F00G00H00I00J
@@ -165,7 +165,7 @@ class MortonCoder
 
   // Using a 32-bit unsigned int for the code_type
   // means we can only resolve 10 3D levels
-  static_assert(L >= 1 && L <= sizeof(code_type)*4/3, "L (LEVELS) must fit into code_type");
+  static_assert(L >= 1 && L <= sizeof(code_type)*8/3, "L (LEVELS) must fit into code_type");
 
   /** The number of bits per dimension [octree subdivisions]. #cells = 8^L. */
   static constexpr int levels = L;
@@ -189,7 +189,7 @@ class MortonCoder
   /** Return the bounding box of the cell with Morton code @a c.
    * @pre c < end_code
    */
-  Box3D cell(yrt) const {
+  Box3D cell(code_type c) const {
     assert(c < end_code);
     Point p = deinterleave(c);
     p *= cell_size_;
