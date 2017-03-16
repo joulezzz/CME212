@@ -7,7 +7,7 @@ I added 4 cores in the setting in virtual box to allow the Virtual Linux System 
 
 Table of Results: Values are in **seconds**
  
-|                                                | thrust::system::omp::par | thrust::system::detail::sequential::seq |
+|             Grid Size                          | thrust::system::omp::par | thrust::system::detail::sequential::seq |
 |------------------------------------------------|--------------------------|-----------------------------------------|
 | **grid0**										 | 148.637                  | 155.018                                 |
 | **grid1**										 | 141.23                   | 178.846                                 |
