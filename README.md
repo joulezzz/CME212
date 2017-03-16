@@ -9,10 +9,10 @@ Table of Results: Values are in **seconds**
  
 |                                                | thrust::system::omp::par | thrust::system::detail::sequential::seq |
 |------------------------------------------------|--------------------------|-----------------------------------------|
-| ./mass_spring data/**grid0.nodes** data/**grid0.tets** | 148.637                  | 155.018                                 |
-| ./mass_spring data/grid1.nodes data/grid1.tets | 141.23                   | 178.846                                 |
-| ./mass_spring data/grid2.nodes data/grid2.tets | 292.818                  | 139.668                                 |
-| ./mass_spring data/grid3.nodes data/grid3.tets | 419.49                   | 322.858                                 |
+| **grid0**										 | 148.637                  | 155.018                                 |
+| **grid1**										 | 141.23                   | 178.846                                 |
+| **grid2**										 | 292.818                  | 139.668                                 |
+| **grid3**										 | 419.49                   | 322.858                                 |
 
 The results shown in the tables are :
 * Plane Constraint
