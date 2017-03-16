@@ -27,6 +27,9 @@ In Problem 3 we were asked to write a SelfCollisionConstraint, which I did. In o
 * Sphere Constraint 1, Move around sphere
 * SelfCollisionConstraint
 
+Finally in the construction of the SpaceSearcher I had the following result
+SpaceSearcher Constuction Time: 0.00635327
+
 ## Take Away
 The take away here is that as the number of nodes increases and theres is more work to compute the more the parallel has a real effect on computing time. However, when the grid size is large and very coarse, sequential procedure is much better. 
 
