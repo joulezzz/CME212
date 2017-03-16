@@ -28,6 +28,7 @@ In Problem 3 we were asked to write a SelfCollisionConstraint, which I did. In o
 * SelfCollisionConstraint
 
 Finally in the construction of the SpaceSearcher I had the following result
+
 SpaceSearcher Constuction Time: 0.00635327
 
 ## Take Away
