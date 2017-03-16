@@ -62,7 +62,7 @@ class SpaceSearcher
 
  public:
   struct P2C {
-    code_type operator()(const Point& p) const {
+    code_type operator()(const Point p) const {
       return mc.code(p);
     }
     MortonCoderType mc;
@@ -93,10 +93,10 @@ class SpaceSearcher
    */
   template <typename TIter, typename T2Point>
   SpaceSearcher(const Box3D& bb,
-                TIter first, TIter last, T2Point t2p) :mc_(bb){ // code_type iterators and point iterators
+                TIter first, TIter last, T2Point t2p) : // code_type iterators and point iterators
     // HW4: YOUR CODE HERE
-    SpaceSearcher(bb, first, last, thrust::make_transform_iterator(first, t2p), thrust::make_transform_iterator(last, t2p));
-  }
+    SpaceSearcher(bb, first, last, thrust::make_transform_iterator(first, t2p), thrust::make_transform_iterator(last, t2p)){}
+  
 
   /** @brief SpaceSearcher Constructor.
    *

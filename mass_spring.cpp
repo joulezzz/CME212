@@ -23,7 +23,10 @@
 #include "CME212/Color.hpp"
 #include "CME212/Point.hpp"
 
+#include "SpaceSearcher.hpp"
+
 #include "Graph.hpp"
+#include <math.h>
 
 
 // Gravity in meters/sec^2
@@ -98,8 +101,8 @@ double symp_euler_step(G& g, double t, double dt, F force, C constraint) {
 
  
   
-  //thrust::for_each(thrust::system::omp::par, g.node_begin(), g.node_end(), UpdatePosition{dt});
-  thrust::for_each(thrust::system::detail::sequential::seq, g.node_begin(), g.node_end(), UpdatePosition{dt});
+  thrust::for_each(thrust::system::omp::par, g.node_begin(), g.node_end(), UpdatePosition{dt});
+  //thrust::for_each(thrust::system::detail::sequential::seq, g.node_begin(), g.node_end(), UpdatePosition{dt});
 
  
   
@@ -117,8 +120,8 @@ double symp_euler_step(G& g, double t, double dt, F force, C constraint) {
   // updates all node velocities
 
  
-  //thrust::for_each(thrust::system::omp::par, g.node_begin(), g.node_end(), UpdateVelocity<F>{t, dt, force});
-  thrust::for_each(thrust::system::detail::sequential::seq, g.node_begin(), g.node_end(), UpdateVelocity<F>{t, dt, force});
+  thrust::for_each(thrust::system::omp::par, g.node_begin(), g.node_end(), UpdateVelocity<F>{t, dt, force});
+  //thrust::for_each(thrust::system::detail::sequential::seq, g.node_begin(), g.node_end(), UpdateVelocity<F>{t, dt, force});
 
   
   //for (auto it = g.node_begin(); it != g.node_end(); ++it) {
@@ -301,6 +304,35 @@ CombinedConstraints<CombinedConstraints<Constraint1, Constraint2>, Constraint3> 
  return make_combined_constraints(make_combined_constraints(c1,c2), c3);
 }
 
+struct SelfCollisionConstraint {
+    void operator()(GraphType& g, double t) const {
+        Box3D bigbb(Point(2,2,2), Point(-2,-2,-2));
+        auto n2p = [] (const Node& n) {return n.position();};
+	SpaceSearcher<Node> ss(bigbb, g.node_begin(), g.node_end(), n2p);
+	for (auto it=g.node_begin(); it != g.node_end(); ++it){
+	    auto n = *it;
+            const Point& center = n.position();
+	    double radius2 = std::numeric_limits<double>::max();
+	    for (auto eit = n.edge_begin(); eit != n.edge_end(); ++eit){
+		auto e = *eit;
+		radius2 = std::min(radius2, normSq(e.node2().position()-center));
+            }
+	    radius2 *= 0.9;
+	    Box3D bb(center + sqrt(radius2), center - sqrt(radius2));
+	    for (auto nhi = ss.begin(bb); nhi != ss.end(bb); ++nhi){
+                Node n2 = *nhi;
+		Point r = center - n2.position();
+		double l2 = normSq(r);
+		if (n != n2 && l2 < radius2) {
+		    n.value().vel -= (dot(r,n.value().vel)/l2)*r;
+		}
+	    } 
+        }
+    }
+};
+
+
+
 
 int main(int argc, char** argv)
 {
@@ -357,8 +389,10 @@ int main(int argc, char** argv)
   PlaneConstraint constraint1;
   SphereConstraint1 constraint2;
   SphereConstraint2 constraint3;
+  SelfCollisionConstraint constraint4 = SelfCollisionConstraint();
 
-  auto all_constraints = make_combined_constraints(constraint1, constraint2, constraint3);
+  auto all_constraints = make_combined_constraints(constraint1, constraint4);
+  
   
 
   // Print out the stats
@@ -385,7 +419,7 @@ int main(int argc, char** argv)
       CME212::Clock clock;
       for (double t = t_start; t < t_end && !interrupt_sim_thread; t += dt) {
         //std::cout << "t = " << t << std::endl;
-        symp_euler_step(graph, t, dt, total_force, all_constraints); // replace Problem1Force() with CombinedForce()
+        symp_euler_step(graph, t, dt, total_force, constraint4); // replace Problem1Force() with CombinedForce()
 	
 	// clear the viewer's nodes and edges 
 	viewer.clear();
