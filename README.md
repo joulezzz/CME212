@@ -6,10 +6,9 @@ I added 4 cores in the setting in virtual box to allow the Virtual Linux System 
 
 Table of Results
  
-												thrust::system::omp::par	| thrust::system::detail::sequential::seq
-												____________________________|_________________________________________
-./mass_spring data/grid0.nodes data/grid0.tets  			148.637			|			155.018
-./mass_spring data/grid1.nodes data/grid1.tets				141.23			|			178.846
-./mass_spring data/grid2.nodes data/grid2.tets				292.818			|			139.668
-./mass_spring data/grid3.nodes data/grid3.tets				419.49			|			322.858
-												____________________________|_________________________________________
+|                                                | thrust::system::omp::par | thrust::system::detail::sequential::seq |
+|------------------------------------------------|--------------------------|-----------------------------------------|
+| ./mass_spring data/grid0.nodes data/grid0.tets | 148.637                  | 155.018                                 |
+| ./mass_spring data/grid1.nodes data/grid1.tets | 141.23                   | 178.846                                 |
+| ./mass_spring data/grid2.nodes data/grid2.tets | 292.818                  | 139.668                                 |
+| ./mass_spring data/grid3.nodes data/grid3.tets | 419.49                   | 322.858                                 |
