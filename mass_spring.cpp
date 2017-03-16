@@ -101,8 +101,8 @@ double symp_euler_step(G& g, double t, double dt, F force, C constraint) {
 
  
   
-  thrust::for_each(thrust::system::omp::par, g.node_begin(), g.node_end(), UpdatePosition{dt});
-  //thrust::for_each(thrust::system::detail::sequential::seq, g.node_begin(), g.node_end(), UpdatePosition{dt});
+  //thrust::for_each(thrust::system::omp::par, g.node_begin(), g.node_end(), UpdatePosition{dt});
+  thrust::for_each(thrust::system::detail::sequential::seq, g.node_begin(), g.node_end(), UpdatePosition{dt});
 
  
   
@@ -120,8 +120,8 @@ double symp_euler_step(G& g, double t, double dt, F force, C constraint) {
   // updates all node velocities
 
  
-  thrust::for_each(thrust::system::omp::par, g.node_begin(), g.node_end(), UpdateVelocity<F>{t, dt, force});
-  //thrust::for_each(thrust::system::detail::sequential::seq, g.node_begin(), g.node_end(), UpdateVelocity<F>{t, dt, force});
+  //thrust::for_each(thrust::system::omp::par, g.node_begin(), g.node_end(), UpdateVelocity<F>{t, dt, force});
+  thrust::for_each(thrust::system::detail::sequential::seq, g.node_begin(), g.node_end(), UpdateVelocity<F>{t, dt, force});
 
   
   //for (auto it = g.node_begin(); it != g.node_end(); ++it) {
@@ -319,7 +319,7 @@ struct SelfCollisionConstraint {
             }
 	    radius2 *= 0.9;
 	    Box3D bb(center + sqrt(radius2), center - sqrt(radius2));
-	    for (auto nhi = ss.begin(bb); nhi != ss.end(bb); ++nhi){
+	    for (auto nhi = ss.begin(bigbb); nhi != ss.end(bigbb); ++nhi){
                 Node n2 = *nhi;
 		Point r = center - n2.position();
 		double l2 = normSq(r);
@@ -368,11 +368,11 @@ int main(int argc, char** argv)
   }
   // HW2 #1 YOUR CODE HERE
   // Set initial conditions for your nodes, if necessary.
-  double spring_constant = 100.0/graph.num_nodes();
+  double spring_constant = 100.0;
   for (auto it = graph.node_begin(); it != graph.node_end(); ++it) {
     auto n = *it;
     n.value().vel = Point(0,0,0);
-    n.value().mass = (1.0/graph.num_nodes())/graph.num_nodes();
+    n.value().mass = 1.0/graph.num_nodes();
   }
   for (auto it = graph.edge_begin(); it != graph.edge_end(); ++it) {
     auto e = *it;
@@ -391,7 +391,7 @@ int main(int argc, char** argv)
   SphereConstraint2 constraint3;
   SelfCollisionConstraint constraint4 = SelfCollisionConstraint();
 
-  auto all_constraints = make_combined_constraints(constraint1, constraint4);
+  auto all_constraints = make_combined_constraints(constraint1, constraint3, constraint2);
   
   
 
@@ -413,13 +413,13 @@ int main(int argc, char** argv)
   auto sim_thread = std::thread([&](){
 
       // Begin the mass-spring simulation
-      double dt = 1.0/graph.num_nodes(); 
+      double dt = 0.001; 
       double t_start = 0;
       double t_end = 5.0;
       CME212::Clock clock;
       for (double t = t_start; t < t_end && !interrupt_sim_thread; t += dt) {
         //std::cout << "t = " << t << std::endl;
-        symp_euler_step(graph, t, dt, total_force, constraint4); // replace Problem1Force() with CombinedForce()
+        symp_euler_step(graph, t, dt, total_force, all_constraints); // replace Problem1Force() with CombinedForce()
 	
 	// clear the viewer's nodes and edges 
 	viewer.clear();
