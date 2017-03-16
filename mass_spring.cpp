@@ -101,8 +101,8 @@ double symp_euler_step(G& g, double t, double dt, F force, C constraint) {
 
  
   
-  //thrust::for_each(thrust::system::omp::par, g.node_begin(), g.node_end(), UpdatePosition{dt});
-  thrust::for_each(thrust::system::detail::sequential::seq, g.node_begin(), g.node_end(), UpdatePosition{dt});
+  thrust::for_each(thrust::system::omp::par, g.node_begin(), g.node_end(), UpdatePosition{dt});
+  //thrust::for_each(thrust::system::detail::sequential::seq, g.node_begin(), g.node_end(), UpdatePosition{dt});
 
  
   
@@ -120,8 +120,8 @@ double symp_euler_step(G& g, double t, double dt, F force, C constraint) {
   // updates all node velocities
 
  
-  //thrust::for_each(thrust::system::omp::par, g.node_begin(), g.node_end(), UpdateVelocity<F>{t, dt, force});
-  thrust::for_each(thrust::system::detail::sequential::seq, g.node_begin(), g.node_end(), UpdateVelocity<F>{t, dt, force});
+  thrust::for_each(thrust::system::omp::par, g.node_begin(), g.node_end(), UpdateVelocity<F>{t, dt, force});
+  //thrust::for_each(thrust::system::detail::sequential::seq, g.node_begin(), g.node_end(), UpdateVelocity<F>{t, dt, force});
 
   
   //for (auto it = g.node_begin(); it != g.node_end(); ++it) {
@@ -391,7 +391,7 @@ int main(int argc, char** argv)
   SphereConstraint2 constraint3;
   SelfCollisionConstraint constraint4 = SelfCollisionConstraint();
 
-  auto all_constraints = make_combined_constraints(constraint1, constraint3, constraint2);
+  auto all_constraints = make_combined_constraints(constraint1, constraint3, constraint4);
   
   
 
