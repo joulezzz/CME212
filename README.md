@@ -14,7 +14,7 @@ Table of Results: Values are in **seconds**
 | **grid2**										 | 292.818                  | 139.668                                 |
 | **grid3**										 | 419.49                   | 322.858                                 |
 
-The results shown in the tables are :
+The assumptions for the results in the table are:
 * Plane Constraint
 * Applying Sphere Constraint 1, Move around Sphere
 * Applying Sphere Constraint 2, Remove Nodes Within Sphere
