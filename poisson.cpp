@@ -187,6 +187,9 @@ class GraphSymmetricMatrix{
       }
     }
 
+    //--comment
+    //--for each node, you just need to iterate thru all its edges
+    //--START
     /** Helper function to perfom multiplication. Allows for delayed 
      *  evaluation of results.
      *  Assign :: apply(a, b) resolves to an assignment operation such as 
@@ -207,6 +210,7 @@ class GraphSymmetricMatrix{
           Assign::apply(w[i.index()], temp);
         }
     }
+    //--END
 
     /** Matvec forward to MTL's lazy mat_cvec_multiplier oeprator */
     template <typename Vector> 
@@ -372,3 +376,5 @@ int main(int argc, char** argv)
 
   return 0;
 }
+
+//--grade9
