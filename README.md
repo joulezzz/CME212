@@ -9,10 +9,10 @@ Table of Results: Values are in **seconds**
  
 |             Grid Size                          | thrust::system::omp::par | thrust::system::detail::sequential::seq |
 |------------------------------------------------|--------------------------|-----------------------------------------|
-| **grid0**										 | 148.637                  | 155.018                                 |
-| **grid1**										 | 141.23                   | 178.846                                 |
-| **grid2**										 | 292.818                  | 139.668                                 |
-| **grid3**										 | 419.49                   | 322.858                                 |
+| **grid0**					 | 148.637                  | 155.018                                 |
+| **grid1**					 | 141.23                   | 178.846                                 |
+| **grid2**					 | 292.818                  | 139.668                                 |
+| **grid3**					 | 419.49                   | 322.858                                 |
 
 The assumptions for the results in the table are:
 * Plane Constraint

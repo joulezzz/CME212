@@ -601,7 +601,9 @@ public:
        NodeIterator(const graph_type* g, size_type idx) : super_t(g->i2u_.begin() + idx, Uid2Node{g}) {}
     };
 
-
+//--comment
+//--Good NodeIterator implementation!
+//--END
 
     /** Return a node iterator pointing to the first element of node sequence.
      * @return NodeIterator pointing to the first element

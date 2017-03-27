@@ -309,7 +309,14 @@ struct SelfCollisionConstraint {
         Box3D bigbb(Point(2,2,2), Point(-2,-2,-2));
         auto n2p = [] (const Node& n) {return n.position();};
 	SpaceSearcher<Node> ss(bigbb, g.node_begin(), g.node_end(), n2p);
+//--comment
+//--Great use of bounding boxes / space searcher in your SelfCollisionConstraint.
+//--Try also incorporating some parallelization (you can actually parallelize
+//--both for loops in this constraint!) using thrust for_each like you did in
+//--symp euler!
+//--START
 	for (auto it=g.node_begin(); it != g.node_end(); ++it){
+//--END
 	    auto n = *it;
             const Point& center = n.position();
 	    double radius2 = std::numeric_limits<double>::max();
@@ -449,3 +456,12 @@ int main(int argc, char** argv)
   return 0;
 }
 
+//--comment
+//--Excellent job with the README -- very clear, ideas well formulated.
+//--END
+
+//--comment
+//--Great job on this assignment and in the class overall! Have a good break!
+//--END
+
+//--grade10
